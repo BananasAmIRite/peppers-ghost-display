@@ -4,7 +4,6 @@
 #include "../../../utils/sd_utils.h"
 #include "../../Screen.h"
 #include "../SpriteScreen.h"
-#include <Adafruit_ImageReader.h>
 #include <memory>
 #include <vector>
 #include <string>
@@ -217,7 +216,7 @@ class ChickenScreen : public SpriteScreen {
     }
 
     public: 
-        ChickenScreen(Adafruit_ImageReader& reader) : SpriteScreen(reader, std::vector<std::string>{
+        ChickenScreen() : SpriteScreen({
             "/chicken0.bmp", 
             "/chicken1.bmp", 
             "/chicken2.bmp", 
@@ -254,13 +253,15 @@ class ChickenScreen : public SpriteScreen {
             "/emoteheart21.bmp", 
             "/emoteheart22.bmp", 
             "/emoteheart23.bmp", 
-        }, true) {
+        }) {
             c.x = 0; 
             c.y = 0; 
             c.targetX = 0; 
             c.targetY = 0; 
             c.state = CHICKEN_IDLE; 
             c.direction = DIR_LEFT; 
+
+            c.animFrame = 0; 
             
             c.stateStartTime = millis(); 
             c.lastAnimTime = millis(); 

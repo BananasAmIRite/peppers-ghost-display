@@ -3,7 +3,6 @@
 #include "../../../../utils/color_utils.h"
 #include "../../../../utils/sd_utils.h"
 #include "../../SpriteScreen.h"
-#include <Adafruit_ImageReader.h>
 #include <memory>
 #include <vector>
 #include <string>
@@ -57,7 +56,7 @@ class RainScreen : public SpriteScreen {
         }
 
     public: 
-        RainScreen(Adafruit_ImageReader& reader, uint16_t rain_speed = 200, uint8_t numDroplets = 16, bool doSplash = false, RainBoundingBox spawn = {0, -56, 360, -16}, RainBoundingBox splash = {0, 160, 320, 200}) : SpriteScreen(reader, std::vector<std::string>{
+        RainScreen(uint16_t rain_speed = 200, uint8_t numDroplets = 16, bool doSplash = false, RainBoundingBox spawn = {0, -56, 360, -16}, RainBoundingBox splash = {0, 160, 320, 200}) : SpriteScreen({
             "/rain0.bmp",
             "/rain1.bmp",
             "/rain2.bmp",
@@ -67,7 +66,7 @@ class RainScreen : public SpriteScreen {
             "/rainc3.bmp",
             "/rainc4.bmp",
             "/rainc5.bmp",
-        }, true), spawnBox(spawn), splashBox(splash), droplets(numDroplets), rainSpeed(rain_speed), shouldSplash(doSplash) {
+        }), spawnBox(spawn), splashBox(splash), droplets(numDroplets), rainSpeed(rain_speed), shouldSplash(doSplash) {
             // spawn in rain
             for (int i = 0; i < numDroplets; i++) {
                 initRandRainDroplet(&droplets[i], true); 

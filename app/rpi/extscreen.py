@@ -141,9 +141,15 @@ class CubeBridge:
 # Entry point
 # ----------------------------
 if __name__ == "__main__":
-    ser = serial.Serial("COM5", 115200)
+    
+    ser = serial.Serial()
+    ser.port = "COM5"
+    ser.baudrate = 115200
+
     ser.dtr = False
     ser.rts = False
+
+    ser.open()
 
     bridge = CubeBridge(ser)
 
@@ -155,4 +161,5 @@ if __name__ == "__main__":
             comms.CURSOR_VISIBLE,
             bytearray([0x00])
         )
+        
         ser.close()

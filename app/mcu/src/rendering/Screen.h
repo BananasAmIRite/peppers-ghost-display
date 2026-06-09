@@ -6,9 +6,11 @@
 #include "../utils/color_utils.h"
 
 class Renderable {
-    public: 
-        virtual void render(Adafruit_GFX* display) = 0; 
-        virtual void click(Adafruit_GFX* display, uint16_t x, uint16_t y) {}
+public:
+    virtual void render(Adafruit_GFX* display) = 0;
+    virtual void click(Adafruit_GFX* display, uint16_t x, uint16_t y) {}
+    virtual void onActivate() {}    // called when this becomes the active renderer
+    virtual void onDeactivate() {}  // called when it stops being the active renderer
 };
 
 class EmptyScreen : public Renderable {
@@ -43,7 +45,10 @@ class Screen {
         }
 
         void setRenderer(Renderable* renderer) {
-            toBeRendered = renderer; 
+            if (toBeRendered == renderer) return;  // no change, do nothing
+            if (toBeRendered != nullptr) toBeRendered->onDeactivate();
+            if (renderer != nullptr) renderer->onActivate();
+            toBeRendered = renderer;
         }
 
         void clearScreen() {

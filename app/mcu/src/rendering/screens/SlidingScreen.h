@@ -59,4 +59,11 @@ class SlidingScreen : public Renderable {
         void addScreen(std::shared_ptr<Renderable> screen) {
             screens.push_back(screen); 
         } 
+
+        void onActivate() override {
+            for (const auto& screen : screens) screen->onActivate();
+        }
+        void onDeactivate() override {
+            for (const auto& screen : screens) screen->onDeactivate();
+        }
 };

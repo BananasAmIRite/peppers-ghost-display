@@ -6,8 +6,9 @@
 #include "rendering/screens/MultipleScreen.h"
 
 
-typedef enum PacketType {
+enum PacketType {
     DEVICE_START = 0x01, 
+    DEVICE_WORK = 0x02, 
 
     CURSOR_SET = 0x10, 
     CURSOR_VISIBLE = 0x11, 
@@ -33,7 +34,7 @@ typedef enum PacketType {
  * 
  */
 
-typedef enum DeviceState {
+enum DeviceState {
     STARTUP, 
     IDLE, 
     WORK
@@ -44,33 +45,44 @@ typedef enum DeviceState {
 // also handles packets
 class CubeDevice {
     private:
-        DeviceState curState; 
+        DeviceState curState = STARTUP; 
         
         Screen* screenPtr; 
 
-        CursorState cursorState; 
         
         MultipleScreen loadingScreenComposed;
         MultipleScreen idleScreenComposed; 
         MultipleScreen workScreenComposed; 
 
-        std::shared_ptr<Renderable> loadingScreen; 
-        std::shared_ptr<Renderable> idleScreen; 
+        // screens!
+        std::shared_ptr<LoadingScreen> loadingScreen; 
+        std::shared_ptr<ChickenScreen> idleScreen; 
         std::shared_ptr<SlidingScreen> workScreen; 
+
+        // work screen stuff
+        std::shared_ptr<WeatherScreen> work_weatherScreen;  
+        std::shared_ptr<Renderable> work_tasksScreen; 
 
         std::shared_ptr<CursorScreen> cursorScreen; 
 
 
     public: 
-        CubeDevice(Screen* scrnPtr, Adafruit_ImageReader* reader, Renderable& loading, Renderable& idle, SlidingScreen& work): 
+        CubeDevice(Screen* scrnPtr, Adafruit_ImageReader* reader): 
             screenPtr(scrnPtr), 
             loadingScreenComposed(), 
             idleScreenComposed(), 
             workScreenComposed(), 
-            loadingScreen(&loading),
-            idleScreen(&idle), 
-            workScreen(&work),
-            cursorScreen(new CursorScreen(*reader)) {
+            cursorScreen(std::make_shared<CursorScreen>()) {
+
+                // init screens
+                loadingScreen = std::make_shared<LoadingScreen>(333); 
+                idleScreen = std::make_shared<ChickenScreen>(); 
+                work_weatherScreen = std::make_shared<WeatherScreen>();
+                work_tasksScreen = std::make_shared<EmptyScreen>();
+
+                workScreen = std::make_shared<SlidingScreen>(); 
+                workScreen->addScreen(work_weatherScreen); 
+                workScreen->addScreen(work_tasksScreen); 
 
                 loadingScreenComposed.addScreen(loadingScreen); 
                 idleScreenComposed.addScreen(idleScreen); 
@@ -80,12 +92,6 @@ class CubeDevice {
                 loadingScreenComposed.addScreen(cursorScreen); 
                 idleScreenComposed.addScreen(cursorScreen); 
                 workScreenComposed.addScreen(cursorScreen); 
-
-                
-                // link cursor screen with the cursor state
-                cursorScreen->setCursor(&cursorState); 
-
-            
         }
 
         
@@ -114,24 +120,28 @@ class CubeDevice {
                     if (curState == STARTUP) curState = IDLE; 
                     break;
 
+                case DEVICE_WORK: 
+                    curState = WORK; 
+                    break; 
+
                 case CURSOR_SET:
                     if (len < 4) return; 
-                    cursorState.cursorX = data[0] << 8 | data[1]; 
-                    cursorState.cursorY = data[2] << 8 | data[3]; 
+                    cursorScreen->getCursor()->cursorX = data[0] << 8 | data[1]; 
+                    cursorScreen->getCursor()->cursorY = data[2] << 8 | data[3]; 
                     break;
 
                 case CURSOR_VISIBLE:
                     if (len < 1) return; 
-                    cursorState.cursorVisible = data[0] & 0x01; 
+                    cursorScreen->getCursor()->cursorVisible = data[0] & 0x01; 
                     break; 
                 case CURSOR_CLICK:
-                    if (cursorState.cursorVisible) screenPtr->getCurrentRenderer()->click(screenPtr->getScreen(), cursorState.cursorX, cursorState.cursorY); 
+                    if (cursorScreen->getCursor()->cursorVisible) screenPtr->getCurrentRenderer()->click(screenPtr->getScreen(), cursorScreen->getCursor()->cursorX, cursorScreen->getCursor()->cursorY); 
                     break; 
                 case CURSOR_DOWN: 
-                    cursorState.mouseDown = true; 
+                    cursorScreen->getCursor()->mouseDown = true; 
                     break; 
                 case CURSOR_UP:
-                    cursorState.mouseDown = false; 
+                    cursorScreen->getCursor()->mouseDown = false; 
                     break; 
                 
                 
@@ -143,7 +153,23 @@ class CubeDevice {
                     break; 
 
 
-                case WEATHER:
+                case WEATHER: {
+                    // data format: float (32), float, float, uint8_t
+                    if (len < 13) return;
+                    // extract data and update
+                    uint32_t max_raw = ((uint32_t) data[0] << 24) | ((uint32_t) data[1] << 16) | ((uint32_t) data[2] << 8) | ((uint32_t) data[3] << 0); 
+                    uint32_t min_raw = ((uint32_t) data[4] << 24) | ((uint32_t) data[5] << 16) | ((uint32_t) data[6] << 8) | ((uint32_t) data[7] << 0); 
+                    uint32_t current_raw = ((uint32_t) data[8] << 24) | ((uint32_t) data[9] << 16) | ((uint32_t) data[10] << 8) | ((uint32_t) data[11] << 0); 
+                    float max, min, current; 
+                    memcpy(&max, &max_raw, sizeof(float)); 
+                    memcpy(&min, &min_raw, sizeof(float)); 
+                    memcpy(&current, &current_raw, sizeof(float)); 
+                    work_weatherScreen->updateWeather(
+                        max, 
+                        min, 
+                        current, 
+                        (WeatherCode) data[12]); 
+                    }
                 break; 
                 case TASKS_ADD:
                 break; 

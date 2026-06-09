@@ -3,9 +3,9 @@
 #include "../../MultipleScreen.h"
 #include "../../SlidingScreen.h"
 #include "./RainScreen.h"
+#include "./SunScreen.h"
 #include "../../../../fonts/tiny512pt7b.h"
 #include "../../../../utils/text_utils.h"
-#include <Adafruit_ImageReader.h>
 #include <memory>
 #include <vector>
 #include <string>
@@ -73,13 +73,13 @@ class WeatherOverlay : public Renderable {
                     weatherStr = "Cloudy";
                     break;
                 case WeatherCode::Rain:
-                    weatherStr = "Rain";
+                    weatherStr = "Rainy";
                     break;
                 case WeatherCode::Storm:
-                    weatherStr = "Storm";
+                    weatherStr = "Stormy";
                     break;
                 case WeatherCode::Snow:
-                    weatherStr = "Snow";
+                    weatherStr = "Snowy";
                     break;
                 default:
                     break;
@@ -94,7 +94,7 @@ class WeatherScreen : public MultipleScreen {
         WeatherState state; 
 
         // possible backgrounds
-        std::shared_ptr<Renderable> clearScreen;  // placeholder
+        std::shared_ptr<Renderable> clearScreen;  
         std::shared_ptr<Renderable> cloudyScreen;  // placeholder
         std::shared_ptr<Renderable> rainScreen; 
         std::shared_ptr<Renderable> stormScreen;  
@@ -111,17 +111,17 @@ class WeatherScreen : public MultipleScreen {
 
 
     public: 
-        WeatherScreen(Adafruit_ImageReader& reader) : 
+        WeatherScreen() : 
         MultipleScreen(), 
         state(), 
         background(std::make_shared<SlidingScreen>(false)), 
         overlay(std::make_shared<WeatherOverlay>(&state)),
 
         // screens
-        clearScreen(std::make_shared<EmptyScreen>()), 
+        clearScreen(std::make_shared<SunScreen>()), 
         cloudyScreen(std::make_shared<EmptyScreen>()), 
-        rainScreen(std::make_shared<RainScreen>(reader)),
-        stormScreen(std::make_shared<RainScreen>(reader, 300, 64, true)), 
+        rainScreen(std::make_shared<RainScreen>()),
+        stormScreen(std::make_shared<RainScreen>(300, 64, true)), 
         snowScreen(std::make_shared<EmptyScreen>())
         {
             background->addScreen(clearScreen); // clear
@@ -141,5 +141,14 @@ class WeatherScreen : public MultipleScreen {
             state.currentWeatherCode = code; 
 
             updateBackground(); 
+        }
+
+        void onActivate() override {
+            background->onActivate(); 
+            overlay->onActivate(); 
+        }
+        void onDeactivate() override {
+            background->onDeactivate(); 
+            overlay->onDeactivate(); 
         }
 };

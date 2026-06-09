@@ -32,5 +32,12 @@ class MultipleScreen : public Renderable {
                 screen->click(display, x, y); 
             }
         }
+
+        void onActivate() override {
+            for (const auto& screen : screens) screen->onActivate();
+        }
+        void onDeactivate() override {
+            for (const auto& screen : screens) screen->onDeactivate();
+        }
         
 };

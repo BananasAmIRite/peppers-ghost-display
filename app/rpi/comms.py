@@ -8,6 +8,8 @@
 # 0x03: SCROLL_RIGHT
 
 DEVICE_START = 0x01
+DEVICE_WORK = 0x02
+
 CURSOR_SET = 0x10
 CURSOR_VISIBLE = 0x11 
 CURSOR_CLICK = 0x12
@@ -24,5 +26,5 @@ CALENDAR_ADD = 0x32
 
 
 def send_message(serial, type, payload):
-    # print("sending message: ", bytearray([0x55, 0x55]) + bytearray([len(payload) + 1, type]) + payload)
+    print("sending message: ", bytearray([0x55, 0x55]) + bytearray([len(payload) + 1, type]) + payload)
     serial.write(bytearray([0x55, 0x55]) + bytearray([len(payload) + 1, type]) + payload)

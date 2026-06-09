@@ -3,83 +3,86 @@
 #include "../../utils/color_utils.h"
 #include "../../utils/sd_utils.h"
 #include "../Screen.h"
-#include <Adafruit_ImageReader.h>
+#include "../../asset/AssetPool.h"
 #include <memory>
 #include <vector>
 #include <string>
 #include <utility>
-
 class SpriteScreen : public Renderable {
-    private:
-        std::vector<std::string> spriteFiles;
-        std::vector<std::unique_ptr<Adafruit_Image>> preloadedSprites;
-        Adafruit_ImageReader* imgReader = nullptr; 
-        bool preloadAtInstantiation;
-        bool hasPreloaded = false; 
-
-        void preloadSprites() {
-            preloadedSprites.clear();
-            preloadedSprites.reserve(spriteFiles.size());
-
-            for (const auto& spriteFile : spriteFiles) {
-                std::unique_ptr<Adafruit_Image> image(new Adafruit_Image());
-                ImageReturnCode val = imgReader->loadBMP(spriteFile.c_str(), *image); 
-                Serial.print("Loading image: ");
-                Serial.print(spriteFile.c_str());  
-                Serial.print("; Result: "); 
-                Serial.println(val); 
-                if (imgReader != nullptr && val == IMAGE_SUCCESS) {
-                    preloadedSprites.push_back(std::move(image));
-                } else {
-                    preloadedSprites.push_back(nullptr);
-                }
-            }
-            
-                Serial.print("Preloaded sprites: "); 
-                Serial.println(preloadedSprites.size()); 
+private:
+    std::vector<std::string> _spriteFiles;
+ 
+    // Non-owning view into AssetPool — the pool owns the Adafruit_Image.
+    // Indexed 1:1 with _spriteFiles.
+    std::vector<Adafruit_Image*> _sprites;
+ 
+    bool _loaded = false;
+ 
+protected:
+ 
+    void drawSprite(Adafruit_GFX* tft, size_t spriteIndex, int16_t x, int16_t y, uint8_t scale) {
+        if (spriteIndex >= _sprites.size() || _sprites[spriteIndex] == nullptr) {
+            LOG("WARNING: sprite OOB; Sprite index: ");
+            LOG(spriteIndex);
+            LOG(", Sprite Size: "); 
+            LOGLN(_sprites.size()); 
+            return;
         }
-
-    protected: 
-        
-        void drawSprite(Adafruit_GFX* tft, size_t spriteIndex, int16_t x, int16_t y, uint8_t scale) {
-            // Serial.println("Drawing current sprite..."); 
-            // Serial.print(spriteIndex);
-            // Serial.print(", ");
-            // Serial.print(x);
-            // Serial.print(", ");
-            // Serial.print(y);
-            // Serial.print(", ");
-            // Serial.println(scale);
-            if (spriteFiles.empty()) {
-                return;
-            }
-
-            if (preloadAtInstantiation && spriteIndex < preloadedSprites.size() && preloadedSprites[spriteIndex] != nullptr) {
-                // Serial.println("Drawing loaded sprite..."); 
-                drawLoadedBMPToGFX(*preloadedSprites[spriteIndex], *tft, x, y, scale);
-                return;
-            }
-
-            if (imgReader != nullptr) {
-                // Serial.println("Drawing and loading sprite..."); 
-                // TODO: impl scale
-                drawBMPToGFX(*imgReader, spriteFiles[spriteIndex].c_str(), *tft, x, y);
-            }
+        drawLoadedBMPToGFX(*_sprites[spriteIndex], *tft, x, y, scale);
+    }
+ 
+public:
+ 
+    SpriteScreen(std::vector<std::string> filePaths)
+        : _spriteFiles(std::move(filePaths))
+    {}
+ 
+    /**
+     * Acquire all sprites from the pool.
+     * Safe to call multiple times — skips if already loaded.
+     */
+    void preload() {
+        if (_loaded) return;
+ 
+        _sprites.clear();
+        _sprites.reserve(_spriteFiles.size());
+ 
+        for (const auto& path : _spriteFiles) {
+            _sprites.push_back(AssetPool::instance().acquire(path));
         }
-    public: 
-
-        SpriteScreen(
-            Adafruit_ImageReader& reader,
-            std::vector<std::string> filePaths,
-            bool preloadSpritesOnInstantiation = false
-        ) : spriteFiles(filePaths), imgReader(&reader), preloadAtInstantiation(preloadSpritesOnInstantiation) {
-            
+ 
+        _loaded = true;
+    }
+ 
+    /**
+     * Release all sprites back to the pool.
+     * The pool will free the underlying image if no other screen holds it.
+     * Safe to call if not loaded.
+     */
+    void freeSprites() {
+        if (!_loaded) return;
+ 
+        for (const auto& path : _spriteFiles) {
+            AssetPool::instance().release(path);
         }
-
-        void render(Adafruit_GFX* tft) override {
-            if (preloadAtInstantiation && !hasPreloaded) {
-                preloadSprites();
-                hasPreloaded = true; 
-            }
+ 
+        _sprites.clear();
+        _loaded = false;
+    }
+ 
+    bool isLoaded() const { return _loaded; }
+ 
+    // Subclasses must call SpriteScreen::render() first as a safety net.
+    // Controlled preloading via preload() is always preferred — hitting this
+    // path means a state transition forgot to call preload(), and will cause
+    // a visible frame hitch while SD loads.
+    void render(Adafruit_GFX* tft) override {
+        if (!_loaded) {
+            LOGLN("[SpriteScreen] WARNING: render() called before preload() -- loading now");
+            preload();
         }
+    }
+
+    void onActivate() override { preload(); }
+    void onDeactivate() override { freeSprites(); }
 };

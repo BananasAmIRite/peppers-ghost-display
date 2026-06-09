@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <functional>
 #include "../DeviceState.h"
+#include "Debug.h"
 
 constexpr uint8_t SYNC_BYTE = 0x55;
 constexpr uint8_t MAX_PAYLOAD = 64;
@@ -40,6 +41,8 @@ class PacketComm {
 
 
         void handlePacket(uint8_t type, uint8_t* data, uint8_t size) {
+            LOG("Packet received: ");
+            LOGLN(type); 
             deviceHandler->handlePacket(type, data, size); 
         }
             

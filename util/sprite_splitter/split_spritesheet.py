@@ -2,10 +2,10 @@ from PIL import Image
 
 IMAGE_WIDTH = 16
 IMAGE_HEIGHT = 16
-TOTAL_X = 4
-TOTAL_Y = 7
-INPUT_FILE = "chicken.png"
-OUTPUT_PREFIX = "chicken"
+TOTAL_X = 2
+TOTAL_Y = 1
+INPUT_FILE = "sprite-sun.png"
+OUTPUT_PREFIX = "sun"
 CONVERT_ALPHA = True
 
 # # Replace 'input.png' with your file path
