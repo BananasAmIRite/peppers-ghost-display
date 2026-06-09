@@ -26,5 +26,5 @@ CALENDAR_ADD = 0x32
 
 
 def send_message(serial, type, payload):
-    print("sending message: ", bytearray([0x55, 0x55]) + bytearray([len(payload) + 1, type]) + payload)
+    # print("sending message: ", bytearray([0x55, 0x55]) + bytearray([len(payload) + 1, type]) + payload)
     serial.write(bytearray([0x55, 0x55]) + bytearray([len(payload) + 1, type]) + payload)

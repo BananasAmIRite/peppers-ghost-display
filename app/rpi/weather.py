@@ -3,15 +3,17 @@ import time
 import struct
 import requests
 import json
+from datetime import datetime
 
 import comms
 
-def build_weather_payload(daily_max: float, daily_min: float, current_temp: float, weather_code: int) -> bytearray:
+def build_weather_payload(w) -> bytearray:
     payload = bytearray()
-    payload += struct.pack(">f", daily_max)
-    payload += struct.pack(">f", daily_min)
-    payload += struct.pack(">f", current_temp)
-    payload += struct.pack("B",  weather_code)
+    payload += struct.pack(">f", w["daily_max"])
+    payload += struct.pack(">f", w["daily_min"])
+    payload += struct.pack(">f", w["current_temp"])
+    payload += struct.pack("B", w["is_night"])
+    payload += struct.pack("B",  w["weather_code"])
     return payload
 
 
@@ -20,13 +22,18 @@ def fetch_weather(latitude: float, longitude: float) -> dict:
         "https://api.open-meteo.com/v1/forecast"
         f"?latitude={latitude}&longitude={longitude}"
         "&current=temperature_2m,weathercode"
-        "&daily=temperature_2m_max,temperature_2m_min"
+        "&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset"
         "&temperature_unit=fahrenheit"
         "&forecast_days=1"
         "&timezone=auto"
     )
     response = requests.get(url)
     data = json.loads(response.text)
+
+    sunrise = datetime.fromisoformat(data["daily"]["sunrise"][0])
+    sunset  = datetime.fromisoformat(data["daily"]["sunset"][0])
+    now     = datetime.now()
+    is_night = now < sunrise or now > sunset
 
     print(data)
  
@@ -35,16 +42,17 @@ def fetch_weather(latitude: float, longitude: float) -> dict:
         "daily_max":    data["daily"]["temperature_2m_max"][0],
         "daily_min":    data["daily"]["temperature_2m_min"][0],
         "weather_code": wmo_to_weather_code(data["current"]["weathercode"]),
+        "is_night": is_night
     }
 
 def wmo_to_weather_code(wmo: int) -> int:
     if wmo == 0:                  return 0  # Clear sky
     if wmo <= 3:                  return 1  # Mainly/partly cloudy
     if wmo <= 67:                 return 2  # Drizzle, rain, freezing rain
-    if wmo <= 77:                 return 4  # Snow
-    if wmo <= 82:                 return 2  # Rain showers
-    if wmo <= 86:                 return 4  # Snow showers
-    if wmo <= 99:                 return 3  # Thunderstorm
+    if wmo <= 77:                 return 5  # Snow
+    if wmo <= 82:                 return 3  # Rain showers
+    if wmo <= 86:                 return 5  # Snow showers
+    if wmo <= 99:                 return 4  # Thunderstorm
     return 1
 
 # Configure the serial port
@@ -65,12 +73,7 @@ if __name__ == "__main__":
     print(f"  Low:     {w['daily_min']:.1f} F")
     print(f"  Code:    {w['weather_code']}")
 
-    payload = build_weather_payload(
-        daily_max=    w["daily_max"],
-        daily_min=    w["daily_min"],
-        current_temp= w["current_temp"],
-        weather_code= w["weather_code"],
-    )
+    payload = build_weather_payload(w)
 
     ser = serial.Serial()
     ser.port = PORT

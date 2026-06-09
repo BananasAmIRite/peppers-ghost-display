@@ -22,12 +22,7 @@ if __name__ == "__main__":
     print(f"  Low:     {w['daily_min']:.1f} F")
     print(f"  Code:    {w['weather_code']}")
 
-    payload = weather.build_weather_payload(
-        daily_max=    w["daily_max"],
-        daily_min=    w["daily_min"],
-        current_temp= w["current_temp"],
-        weather_code= w["weather_code"],
-    )
+    payload = weather.build_weather_payload(w)
 
     ser = serial.Serial()
     ser.port = PORT
@@ -41,9 +36,9 @@ if __name__ == "__main__":
     print("Sending message...")
     comms.send_message(ser, comms.DEVICE_START, bytearray())
 
-    comms.send_message(ser, comms.WEATHER, payload)
+    # comms.send_message(ser, comms.WEATHER, payload)
 
-    comms.send_message(ser, comms.DEVICE_WORK, bytearray())
+    # comms.send_message(ser, comms.DEVICE_WORK, bytearray())
 
 
     out = ser.read_all()

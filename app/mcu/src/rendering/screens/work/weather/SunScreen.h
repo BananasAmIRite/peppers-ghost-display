@@ -17,21 +17,39 @@ class SunScreen : public SpriteScreen {
         uint32_t renderStart = 0; 
 
         uint16_t frameTime; 
+        uint16_t moonFrameTime; 
+        bool* isNight; 
 
     public: 
-        SunScreen(uint16_t sunFrameTime = 350) : SpriteScreen({
+        SunScreen(bool* nightPtr, uint16_t sunFrameTime = 350, uint16_t moonFrameTime = 1000) : SpriteScreen({
             "/sun0.bmp",
             "/sun1.bmp",
-        }), frameTime(sunFrameTime) {
+            "/moon0.bmp",
+            "/moon1.bmp",
+            "/moon2.bmp",
+            "/moon3.bmp",
+            "/moon4.bmp",
+        }), frameTime(sunFrameTime), moonFrameTime(moonFrameTime), isNight(nightPtr) {
             renderStart = millis(); 
         }
 
 
         void render(Adafruit_GFX* tft) override {
+
+
             SpriteScreen::render(tft); 
 
-            curSunFrame = ((millis() - renderStart) / frameTime) % 2; 
+            if (&isNight) {
+                curSunFrame = 2 + ((millis() - renderStart) / moonFrameTime) % 5; 
+                drawSprite(tft, curSunFrame, 15, 15, 4); 
 
-            drawSprite(tft, curSunFrame, 0, 0, 4); 
+            } else {
+                curSunFrame = ((millis() - renderStart) / frameTime) % 2; 
+                
+                drawSprite(tft, curSunFrame, 0, 0, 4); 
+
+            }
+
+
         }
 };

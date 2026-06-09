@@ -14,15 +14,18 @@
 enum WeatherCode {
     Clear = 0, 
     Cloudy = 1, 
-    Rain = 2, 
-    Storm = 3, 
-    Snow = 4
+    Drizzle = 2, 
+    Rain = 3, 
+    Storm = 4, 
+    Snow = 5
 };
 
 struct WeatherState {
     float dailyMax; 
     float dailyMin;
     float currentTemp; 
+
+    bool isNight; 
     
     WeatherCode currentWeatherCode; 
 };
@@ -72,6 +75,9 @@ class WeatherOverlay : public Renderable {
                 case WeatherCode::Cloudy:
                     weatherStr = "Cloudy";
                     break;
+                case WeatherCode::Drizzle:
+                    weatherStr = "Drizzle";
+                    break;
                 case WeatherCode::Rain:
                     weatherStr = "Rainy";
                     break;
@@ -96,6 +102,7 @@ class WeatherScreen : public MultipleScreen {
         // possible backgrounds
         std::shared_ptr<Renderable> clearScreen;  
         std::shared_ptr<Renderable> cloudyScreen;  // placeholder
+        std::shared_ptr<Renderable> drizzleScreen; 
         std::shared_ptr<Renderable> rainScreen; 
         std::shared_ptr<Renderable> stormScreen;  
         std::shared_ptr<Renderable> snowScreen;  // placeholder
@@ -118,14 +125,16 @@ class WeatherScreen : public MultipleScreen {
         overlay(std::make_shared<WeatherOverlay>(&state)),
 
         // screens
-        clearScreen(std::make_shared<SunScreen>()), 
+        clearScreen(std::make_shared<SunScreen>(&state.isNight)), 
         cloudyScreen(std::make_shared<EmptyScreen>()), 
+        drizzleScreen(std::make_shared<RainScreen>(200, 8, false)),
         rainScreen(std::make_shared<RainScreen>()),
         stormScreen(std::make_shared<RainScreen>(300, 64, true)), 
         snowScreen(std::make_shared<EmptyScreen>())
         {
             background->addScreen(clearScreen); // clear
             background->addScreen(cloudyScreen); // cloudy
+            background->addScreen(drizzleScreen); // drizzling
             background->addScreen(rainScreen); // rain
             background->addScreen(stormScreen); // storm
             background->addScreen(snowScreen); // snow
@@ -134,11 +143,13 @@ class WeatherScreen : public MultipleScreen {
             addScreen(overlay); 
         }
 
-        void updateWeather(float dailyMax, float dailyMin, float curTemp, WeatherCode code) {
+        void updateWeather(float dailyMax, float dailyMin, float curTemp, bool isNight, WeatherCode code) {
             state.dailyMax = dailyMax; 
             state.dailyMin = dailyMin; 
             state.currentTemp = curTemp; 
             state.currentWeatherCode = code; 
+
+            state.isNight = isNight; 
 
             updateBackground(); 
         }

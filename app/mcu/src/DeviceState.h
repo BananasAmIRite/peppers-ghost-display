@@ -155,7 +155,7 @@ class CubeDevice {
 
                 case WEATHER: {
                     // data format: float (32), float, float, uint8_t
-                    if (len < 13) return;
+                    if (len < 14) return;
                     // extract data and update
                     uint32_t max_raw = ((uint32_t) data[0] << 24) | ((uint32_t) data[1] << 16) | ((uint32_t) data[2] << 8) | ((uint32_t) data[3] << 0); 
                     uint32_t min_raw = ((uint32_t) data[4] << 24) | ((uint32_t) data[5] << 16) | ((uint32_t) data[6] << 8) | ((uint32_t) data[7] << 0); 
@@ -168,7 +168,8 @@ class CubeDevice {
                         max, 
                         min, 
                         current, 
-                        (WeatherCode) data[12]); 
+                        data[12] & 0x01, 
+                        (WeatherCode) data[13]); 
                     }
                 break; 
                 case TASKS_ADD:
