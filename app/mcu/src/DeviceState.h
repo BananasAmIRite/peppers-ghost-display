@@ -109,6 +109,10 @@ class CubeDevice {
             screenPtr->tryRender(); 
         }
 
+        void setState(DeviceState newState) {
+            curState = newState; 
+        }
+
 
 
         

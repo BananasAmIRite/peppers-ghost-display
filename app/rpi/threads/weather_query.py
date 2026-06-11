@@ -10,6 +10,7 @@ def weather_query(ser: ESPSerial.ESPSerial, lat: float, long: float):
     print(f"  High:    {w['daily_max']:.1f} F")
     print(f"  Low:     {w['daily_min']:.1f} F")
     print(f"  Code:    {w['weather_code']}")
+    print(f"  Night:   {w['is_night']}")
 
     payload = weather.build_weather_payload(w)
 

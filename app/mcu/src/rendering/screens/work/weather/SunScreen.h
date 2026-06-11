@@ -39,7 +39,7 @@ class SunScreen : public SpriteScreen {
 
             SpriteScreen::render(tft); 
 
-            if (&isNight) {
+            if (*isNight) {
                 curSunFrame = 2 + ((millis() - renderStart) / moonFrameTime) % 5; 
                 drawSprite(tft, curSunFrame, 15, 15, 4); 
 

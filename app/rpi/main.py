@@ -30,19 +30,21 @@ if __name__ == "__main__":
     ser.write_message(comms.DEVICE_START, bytearray())
     ser.write_message(comms.DEVICE_WORK, bytearray())
 
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        print("\nProgram terminated gracefully.")
+    time.sleep(2)
 
-    thread_weather.stop()
-    thread_weather.join()
+    # try:
+    #     while True:
+    #         time.sleep(1)
+    # except KeyboardInterrupt:
+    #     print("\nProgram terminated gracefully.")
 
-    print("Main Thread stopped. ")
+    # thread_weather.stop()
+    # thread_weather.join()
+
+    # print("Main Thread stopped. ")
 
 
-    # out = ser.read_all()
-    # with open('./output.txt', 'w') as file:
-    #     file.write(out.decode("utf-8"))
-    # ser.close()
+    out = ser.read_all()
+    with open('./output.txt', 'w') as file:
+        file.write(out.decode("utf-8"))
+    ser.close()

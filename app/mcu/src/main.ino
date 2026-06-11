@@ -42,7 +42,9 @@ PacketComm packetReceiverPC(Serial);
 PacketComm packetReceiverPI(Serial1); 
 
 // make device
-CubeDevice device(&screen, &reader); 
+CubeDevice device(&screen, &reader);
+
+bool device_suspended = false; 
 
 
 void setup() {
@@ -71,10 +73,27 @@ void setup() {
 
 void loop() {
 
+  // if (device_suspended) {
+  //   device.setState(WORK);
+  // } else {
+  //   device.setState(IDLE); 
+  // }
   packetReceiverPC.loop(); 
   packetReceiverPI.loop();
 
   device.loop(); 
 
   
+}
+
+#include <Arduino.h>
+
+extern "C" void tud_suspend_cb(bool remote_wakeup_en)
+{
+  device_suspended = true; 
+}
+
+extern "C" void tud_resume_cb(void)
+{
+  device_suspended = false; 
 }
