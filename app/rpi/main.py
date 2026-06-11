@@ -1,7 +1,10 @@
-import comms
-import weather
+import lib.comms as comms
+import lib.weather as weather
 import serial
 import time
+import lib.ESPSerial as ESPSerial
+import lib.PeriodicThread as PeriodicThread
+from threads.weather_query import weather_query 
 
 
 # Configure the serial port
@@ -14,34 +17,32 @@ LATITUDE  = 42.3601
 LONGITUDE = -71.0589
 
 if __name__ == "__main__":
-    
-    print("Fetching weather...")
-    w = weather.fetch_weather(LATITUDE, LONGITUDE)
-    print(f"  Current: {w['current_temp']:.1f} F")
-    print(f"  High:    {w['daily_max']:.1f} F")
-    print(f"  Low:     {w['daily_min']:.1f} F")
-    print(f"  Code:    {w['weather_code']}")
 
-    payload = weather.build_weather_payload(w)
+    ser = ESPSerial.ESPSerial(PORT, BAUDRATE)
 
-    ser = serial.Serial()
-    ser.port = PORT
-    ser.baudrate = 115200
-
-    ser.dtr = False
-    ser.rts = False
+    thread_weather = PeriodicThread.PeriodicThread(60*30, weather_query, ser, LATITUDE, LONGITUDE)
 
     ser.open()
 
-    print("Sending message...")
-    comms.send_message(ser, comms.DEVICE_START, bytearray())
+    thread_weather.start()
 
-    # comms.send_message(ser, comms.WEATHER, payload)
+    print("Sending start message...")
+    ser.write_message(comms.DEVICE_START, bytearray())
+    ser.write_message(comms.DEVICE_WORK, bytearray())
 
-    # comms.send_message(ser, comms.DEVICE_WORK, bytearray())
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("\nProgram terminated gracefully.")
+
+    thread_weather.stop()
+    thread_weather.join()
+
+    print("Main Thread stopped. ")
 
 
-    out = ser.read_all()
-    with open('./output.txt', 'w') as file:
-        file.write(out.decode("utf-8"))
-    ser.close()
+    # out = ser.read_all()
+    # with open('./output.txt', 'w') as file:
+    #     file.write(out.decode("utf-8"))
+    # ser.close()

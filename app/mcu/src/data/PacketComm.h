@@ -32,7 +32,19 @@ class PacketComm {
         RxState state = WAIT_SYNC1;
         CubeDevice* deviceHandler; 
 
+        HardwareSerial& serial; 
+
     public: 
+        PacketComm(HardwareSerial& ser): serial(ser) {}
+
+        void loop() {
+            
+            while (serial.available())
+            {
+                processByte(serial.read());
+            }
+        }
+
 
         
         void registerCubeDevice(CubeDevice* handler) {

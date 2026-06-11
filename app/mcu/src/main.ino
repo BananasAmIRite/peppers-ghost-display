@@ -12,6 +12,9 @@
 #include "./DeviceState.h"
 #include "./asset/AssetPool.h"
 
+// Serial pins for PI comms
+#define SER_RX1 19
+#define SER_TX1 18
 
 // Custom SPI pins
 #define CUSTOM_SCK  4
@@ -35,14 +38,20 @@ Screen screen(&tft, 15);
 
 
 // packet receiver
-PacketComm packetReceiver; 
+PacketComm packetReceiverPC(Serial); 
+PacketComm packetReceiverPI(Serial1); 
 
 // make device
 CubeDevice device(&screen, &reader); 
 
+
 void setup() {
 
   Serial.begin(115200);
+
+  // Initialize Serial1 to communicate with the Raspberry Pi
+  // Parameters: baud rate, protocol configuration, RX pin, TX pin
+  Serial1.begin(115200, SERIAL_8N1, SER_RX1, SER_TX1);
 
   // Begin SPI with custom pinout: (SCK, MISO, MOSI, SS)
   spi.begin(CUSTOM_SCK, CUSTOM_MISO, CUSTOM_MOSI, CUSTOM_CS);
@@ -54,17 +63,18 @@ void setup() {
   tft.setSPISpeed(40000000); 
 
 
-  packetReceiver.registerCubeDevice(&device);
+  packetReceiverPC.registerCubeDevice(&device);
+  packetReceiverPI.registerCubeDevice(&device);
   
 }
 
 
 void loop() {
 
-  while (Serial.available())
-  {
-      packetReceiver.processByte(Serial.read());
-  }
+  packetReceiverPC.loop(); 
+  packetReceiverPI.loop();
 
   device.loop(); 
+
+  
 }
