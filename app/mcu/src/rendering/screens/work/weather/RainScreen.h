@@ -56,7 +56,7 @@ class RainScreen : public SpriteScreen {
         }
 
     public: 
-        RainScreen(uint16_t rain_speed = 200, uint8_t numDroplets = 16, bool doSplash = false, RainBoundingBox spawn = {0, -56, 360, -16}, RainBoundingBox splash = {0, 160, 320, 200}) : SpriteScreen({
+        RainScreen(uint16_t rain_speed = 300, uint8_t numDroplets = 16, bool doSplash = false, RainBoundingBox spawn = {0, -56, 540, -16}, RainBoundingBox splash = {0, 230, 480, 280}) : SpriteScreen({
             "/rain0.bmp",
             "/rain1.bmp",
             "/rain2.bmp",

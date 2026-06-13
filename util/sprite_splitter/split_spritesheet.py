@@ -4,8 +4,8 @@ IMAGE_WIDTH = 16
 IMAGE_HEIGHT = 16
 TOTAL_X = 5
 TOTAL_Y = 1
-INPUT_FILE = "moon.png"
-OUTPUT_PREFIX = "moon"
+INPUT_FILE = "raincustom.png"
+OUTPUT_PREFIX = "rainc"
 CONVERT_ALPHA = True
 
 # # Replace 'input.png' with your file path

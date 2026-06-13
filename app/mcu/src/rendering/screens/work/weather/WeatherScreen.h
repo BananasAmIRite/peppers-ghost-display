@@ -127,9 +127,9 @@ class WeatherScreen : public MultipleScreen {
         // screens
         clearScreen(std::make_shared<SunScreen>(&state.isNight)), 
         cloudyScreen(std::make_shared<EmptyScreen>()), 
-        drizzleScreen(std::make_shared<RainScreen>(200, 8, false)),
+        drizzleScreen(std::make_shared<RainScreen>(300, 8, false)),
         rainScreen(std::make_shared<RainScreen>()),
-        stormScreen(std::make_shared<RainScreen>(300, 64, true)), 
+        stormScreen(std::make_shared<RainScreen>(450, 64, true)), 
         snowScreen(std::make_shared<EmptyScreen>())
         {
             background->addScreen(clearScreen); // clear

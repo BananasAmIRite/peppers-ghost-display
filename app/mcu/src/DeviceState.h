@@ -98,7 +98,7 @@ class CubeDevice {
         void loop() {
             // rendering
             if (curState == STARTUP) {
-                screenPtr->setRenderer(&loadingScreenComposed); 
+            screenPtr->setRenderer(&loadingScreenComposed); 
             } else if (curState == IDLE) {
                 screenPtr->setRenderer(&idleScreenComposed); 
             } else if (curState == WORK) {

@@ -143,7 +143,7 @@ class CubeBridge:
 if __name__ == "__main__":
     
     ser = serial.Serial()
-    ser.port = "COM5"
+    ser.port = "COM8"
     ser.baudrate = 115200
 
     ser.dtr = False

@@ -1,39 +1,21 @@
 Packet received: 1
-Packet received: 2
-[AssetPool] freed /cursor.bmp
-[AssetPool] load /sun0.bmp -> 0
-[AssetPool] load /sun1.bmp -> 0
-[AssetPool] load /moon0.bmp -> 0
-[AssetPool] load /moon1.bmp -> 0
-[AssetPool] load /moon2.bmp -> 0
-[AssetPool] load /moon3.bmp -> 0
-[AssetPool] load /moon4.bmp -> 0
-[AssetPool] load /rain0.bmp -> 0
-[AssetPool] load /rain1.bmp -> 0
-[AssetPool] load /rain2.bmp -> 0
-[AssetPool] load /rain3.bmp -> 0
-[AssetPool] load /rainc1.bmp -> 0
-[AssetPool] load /rainc2.bmp -> 0
-[AssetPool] load /rainc3.bmp -> 0
-[AssetPool] load /rainc4.bmp -> 0
-[AssetPool] load /rainc5.bmp -> 0
-[AssetPool] load /cursor.bmp -> 0
-0
-0
-0
 Packet received: 48
-is night: 0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
+Packet received: 2
+17
+17
+17
+17
+17
+17
+17
+17
+17
+17
+17
+17
+17
+17
+17
+17
+17
+17

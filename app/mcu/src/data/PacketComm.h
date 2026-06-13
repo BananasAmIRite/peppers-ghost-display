@@ -4,6 +4,7 @@
 #include <functional>
 #include "../DeviceState.h"
 #include "Debug.h"
+#include <HWCDC.h>
 
 constexpr uint8_t SYNC_BYTE = 0x55;
 constexpr uint8_t MAX_PAYLOAD = 64;
@@ -32,10 +33,10 @@ class PacketComm {
         RxState state = WAIT_SYNC1;
         CubeDevice* deviceHandler; 
 
-        HardwareSerial& serial; 
+        HWCDC& serial; 
 
     public: 
-        PacketComm(HardwareSerial& ser): serial(ser) {}
+        PacketComm(HWCDC& ser): serial(ser) {}
 
         void loop() {
             

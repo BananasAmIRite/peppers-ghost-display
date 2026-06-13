@@ -5,7 +5,7 @@ import requests
 import json
 from datetime import datetime
 
-import lib.comms
+import lib.comms as comms 
 
 def build_weather_payload(w) -> bytearray:
     payload = bytearray()
@@ -56,7 +56,7 @@ def wmo_to_weather_code(wmo: int) -> int:
     return 1
 
 # Configure the serial port
-PORT = "COM5"
+PORT = "COM8"
 BAUDRATE = 115200  # Must match the baud rate of the connected device
 
 # Cambridge, MA — change to your location
@@ -72,6 +72,7 @@ if __name__ == "__main__":
     print(f"  High:    {w['daily_max']:.1f} F")
     print(f"  Low:     {w['daily_min']:.1f} F")
     print(f"  Code:    {w['weather_code']}")
+    # w['weather_code'] = 3 # change weather code for testing
 
     payload = build_weather_payload(w)
 

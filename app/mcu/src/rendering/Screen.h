@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Arduino.h"
-#include <Adafruit_ST7789.h>
+// #include <Adafruit_ST7789.h>
+#include <Adafruit_HX8357.h>
 #include <Adafruit_GFX.h>
 #include "../utils/color_utils.h"
 
@@ -21,7 +22,7 @@ class EmptyScreen : public Renderable {
 
 class Screen {
     private:  
-        Adafruit_ST7789* tft;
+        Adafruit_HX8357* tft;
         uint8_t refreshRate; 
         long lastRenderTime = -1;
         Renderable* toBeRendered = nullptr; 
@@ -29,7 +30,7 @@ class Screen {
 
     public:
 
-        Screen(Adafruit_ST7789* tft_hndl, uint8_t screen_refresh_rate): tft(tft_hndl), refreshRate(screen_refresh_rate) {
+        Screen(Adafruit_HX8357* tft_hndl, uint8_t screen_refresh_rate): tft(tft_hndl), refreshRate(screen_refresh_rate) {
             buffer = new GFXcanvas16(tft_hndl->width(), tft_hndl->height());
             buffer->setRotation(1);
         }
