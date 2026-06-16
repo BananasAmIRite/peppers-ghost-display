@@ -203,187 +203,79 @@ GenerateClassCluster=0
 DocumentUniqueId=WXNSCITY
 
 [GeneratedDocument1]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\steps\pcb\layers\comp_+_top\components
-DItemRevisionGUID=
-
-[GeneratedDocument2]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\steps\pcb\eda\data
-DItemRevisionGUID=
-
-[GeneratedDocument3]
 DocumentPath=Project Outputs for holographic_display_pcb_2\Design Rule Check - PCB1.html
 DItemRevisionGUID=
 
-[GeneratedDocument4]
-DocumentPath=Project Outputs for holographic_display_pcb_2\Design Rule Check - PCB.html
-DItemRevisionGUID=
-
-[GeneratedDocument5]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\steps\pcb\layers\bottom_layer\features
-DItemRevisionGUID=
-
-[GeneratedDocument6]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\steps\pcb\layers\bottom_overlay\features
-DItemRevisionGUID=
-
-[GeneratedDocument7]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\steps\pcb\layers\bottom_paste\features
-DItemRevisionGUID=
-
-[GeneratedDocument8]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\steps\pcb\layers\bottom_solder\features
-DItemRevisionGUID=
-
-[GeneratedDocument9]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\steps\pcb\layers\comp_+_top\features
-DItemRevisionGUID=
-
-[GeneratedDocument10]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\steps\pcb\layers\core\features
-DItemRevisionGUID=
-
-[GeneratedDocument11]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\steps\pcb\layers\dielectric_2\features
-DItemRevisionGUID=
-
-[GeneratedDocument12]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\steps\pcb\layers\dielectric_3\features
-DItemRevisionGUID=
-
-[GeneratedDocument13]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\steps\pcb\layers\drill_non-plated_bottom_layer-top_layer\features
-DItemRevisionGUID=
-
-[GeneratedDocument14]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\steps\pcb\layers\drill_plated_bottom_layer-top_layer\features
-DItemRevisionGUID=
-
-[GeneratedDocument15]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\steps\pcb\layers\layer_1__gnd_\features
-DItemRevisionGUID=
-
-[GeneratedDocument16]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\steps\pcb\layers\layer_2__power_\features
-DItemRevisionGUID=
-
-[GeneratedDocument17]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\steps\pcb\layers\top_layer\features
-DItemRevisionGUID=
-
-[GeneratedDocument18]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\steps\pcb\layers\top_overlay\features
-DItemRevisionGUID=
-
-[GeneratedDocument19]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\steps\pcb\layers\top_paste\features
-DItemRevisionGUID=
-
-[GeneratedDocument20]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\steps\pcb\layers\top_solder\features
-DItemRevisionGUID=
-
-[GeneratedDocument21]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\matrix\matrix
-DItemRevisionGUID=
-
-[GeneratedDocument22]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\steps\pcb\netlists\cadnet\netlist
-DItemRevisionGUID=
-
-[GeneratedDocument23]
+[GeneratedDocument2]
 DocumentPath=Project Outputs for holographic_display_pcb_2\PCB1-RoundHoles-NonPlated.TXT
 DItemRevisionGUID=
 
-[GeneratedDocument24]
+[GeneratedDocument3]
 DocumentPath=Project Outputs for holographic_display_pcb_2\PCB1-RoundHoles-Plated.TXT
 DItemRevisionGUID=
 
-[GeneratedDocument25]
-DocumentPath=Project Outputs for holographic_display_pcb_2\PCB1-RoundHoles.TXT
-DItemRevisionGUID=
-
-[GeneratedDocument26]
+[GeneratedDocument4]
 DocumentPath=Project Outputs for holographic_display_pcb_2\PCB1-SlotHoles-Plated.TXT
 DItemRevisionGUID=
 
-[GeneratedDocument27]
-DocumentPath=Project Outputs for holographic_display_pcb_2\PCB1-SlotHoles.TXT
-DItemRevisionGUID=
-
-[GeneratedDocument28]
+[GeneratedDocument5]
 DocumentPath=Project Outputs for holographic_display_pcb_2\PCB1.DRR
 DItemRevisionGUID=
 
-[GeneratedDocument29]
+[GeneratedDocument6]
 DocumentPath=Project Outputs for holographic_display_pcb_2\PCB1.EXTREP
 DItemRevisionGUID=
 
-[GeneratedDocument30]
+[GeneratedDocument7]
 DocumentPath=Project Outputs for holographic_display_pcb_2\PCB1.G1
 DItemRevisionGUID=
 
-[GeneratedDocument31]
+[GeneratedDocument8]
 DocumentPath=Project Outputs for holographic_display_pcb_2\PCB1.G2
 DItemRevisionGUID=
 
-[GeneratedDocument32]
+[GeneratedDocument9]
 DocumentPath=Project Outputs for holographic_display_pcb_2\PCB1.GBL
 DItemRevisionGUID=
 
-[GeneratedDocument33]
+[GeneratedDocument10]
 DocumentPath=Project Outputs for holographic_display_pcb_2\PCB1.GBO
 DItemRevisionGUID=
 
-[GeneratedDocument34]
+[GeneratedDocument11]
 DocumentPath=Project Outputs for holographic_display_pcb_2\PCB1.GBP
 DItemRevisionGUID=
 
-[GeneratedDocument35]
+[GeneratedDocument12]
 DocumentPath=Project Outputs for holographic_display_pcb_2\PCB1.GBS
 DItemRevisionGUID=
 
-[GeneratedDocument36]
+[GeneratedDocument13]
 DocumentPath=Project Outputs for holographic_display_pcb_2\PCB1.GM
 DItemRevisionGUID=
 
-[GeneratedDocument37]
+[GeneratedDocument14]
 DocumentPath=Project Outputs for holographic_display_pcb_2\PCB1.GTL
 DItemRevisionGUID=
 
-[GeneratedDocument38]
+[GeneratedDocument15]
 DocumentPath=Project Outputs for holographic_display_pcb_2\PCB1.GTO
 DItemRevisionGUID=
 
-[GeneratedDocument39]
+[GeneratedDocument16]
 DocumentPath=Project Outputs for holographic_display_pcb_2\PCB1.GTP
 DItemRevisionGUID=
 
-[GeneratedDocument40]
+[GeneratedDocument17]
 DocumentPath=Project Outputs for holographic_display_pcb_2\PCB1.GTS
 DItemRevisionGUID=
 
-[GeneratedDocument41]
+[GeneratedDocument18]
 DocumentPath=Project Outputs for holographic_display_pcb_2\PCB1.LDP
 DItemRevisionGUID=
 
-[GeneratedDocument42]
+[GeneratedDocument19]
 DocumentPath=Project Outputs for holographic_display_pcb_2\PCB1.REP
-DItemRevisionGUID=
-
-[GeneratedDocument43]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\steps\pcb\profile
-DItemRevisionGUID=
-
-[GeneratedDocument44]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\steps\pcb\stephdr
-DItemRevisionGUID=
-
-[GeneratedDocument45]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\steps\pcb\layers\drill_non-plated_bottom_layer-top_layer\tools
-DItemRevisionGUID=
-
-[GeneratedDocument46]
-DocumentPath=Project Outputs for holographic_display_pcb_2\odb\steps\pcb\layers\drill_plated_bottom_layer-top_layer\tools
 DItemRevisionGUID=
 
 [Configuration1]

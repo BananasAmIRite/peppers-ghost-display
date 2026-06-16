@@ -9,10 +9,11 @@
 // #include <Adafruit_ST7789.h>
 #include <Adafruit_HX8357.h>
 #include <Adafruit_ImageReader.h>
-#include "./data/PacketComm.h"
-#include "./DeviceState.h"
+#include "./data/UARTComms.h"
+#include "./CubeDevice.h"
 #include "./asset/AssetPool.h"
 #include <Arduino.h>
+#include "data/SPIComms.h"
 
 // Serial pins for PI comms
 // #define SER_RX1 19
@@ -31,12 +32,15 @@ SPIClass spi = SPIClass(FSPI); // You can also use HSPI
 #define TFT_CS    42
 #define TFT_RST   -1
 #define TFT_SD_CS 1
-// int8_t _CS, int8_t _DC, int8_t _MOSI, int8_t _SCLK,
-//                   int8_t _RST, int8_t _MISO
+
+#define RPI_SCK 12
+#define RPI_MOSI 11
+#define RPI_MISO 13
+#define RPI_CS 10
+
 // Adafruit_ST7789 tft = Adafruit_ST7789(&spi, TFT_CS, TFT_DC, TFT_RST);
 Adafruit_HX8357 tft = Adafruit_HX8357(
   &spi, TFT_CS, TFT_DC, TFT_RST
-  // TFT_CS, TFT_DC, CUSTOM_MOSI, CUSTOM_SCK, TFT_RST, CUSTOM_MISO
 );
 SdFat                SD;         // SD card filesystem
 Adafruit_ImageReader reader(SD); 
@@ -45,13 +49,19 @@ Screen screen(&tft, 15);
 
 
 // packet receiver
-PacketComm packetReceiverPC(Serial); 
-// PacketComm packetReceiverPI(Serial1); 
+UARTComms packetReceiverPC(Serial); 
+// UARTComms packetReceiverPI(Serial1); 
+SPIComms spiReceiverPI(
+      SPI3_HOST,    // SPI Host Peripherals Select
+        RPI_MOSI, RPI_MISO, RPI_CS, RPI_SCK, 
+        4096, 
+        4096, 
+        4*1024*1024
+); 
 
-// // make device
+
+// make device
 CubeDevice device(&screen, &reader);
-
-// bool device_suspended = false; 
 
 SdSpiConfig config(
     TFT_SD_CS,
@@ -64,13 +74,14 @@ void setup() {
 
   Serial.begin(115200);
 
-  // // Initialize Serial1 to communicate with the Raspberry Pi
-  // // Parameters: baud rate, protocol configuration, RX pin, TX pin
+  // Initialize Serial1 to communicate with the Raspberry Pi
+  // Parameters: baud rate, protocol configuration, RX pin, TX pin
   // Serial1.begin(115200, SERIAL_8N1, SER_RX1, SER_TX1);
 
   // Begin SPI with custom pinout: (SCK, MISO, MOSI, SS)
 
   spi.begin(CUSTOM_SCK, CUSTOM_MISO, CUSTOM_MOSI, CUSTOM_CS);
+  spiReceiverPI.begin(); 
 
 
   SD.begin(config);
@@ -81,9 +92,15 @@ void setup() {
   // tft.init(240, 320, SPI_MODE0);           // Init ST7789 320x240
   tft.setSPISpeed(40000000); 
 
+  // rpispi.begin(); 
 
-  packetReceiverPC.registerCubeDevice(&device);
+  Serial.println("starting...");
+
+
+  packetReceiverPC.addUARTHandler(&device);
   // packetReceiverPI.registerCubeDevice(&device);
+
+  spiReceiverPI.addHandler(&device); 
   
   // AssetPool::instance().acquire("/chicken0.bmp");
 }
@@ -91,27 +108,36 @@ void setup() {
 
 void loop() {
 
+    // if (rpispi.receiveImage())
+    // {
+    //     auto* canvas = rpispi.canvas();
+
+    //     // tft.drawRGBBitmap(
+    //     //     0,
+    //     //     0,
+    //     //     canvas->getBuffer(),
+    //     //     canvas->width(),
+    //     //     canvas->height());
+    //     Serial.println("received image!");
+
+    //     // Serial.println(canvas->width()); 
+    //     // Serial.println(canvas->height()); 
+    // }
+
+    // Serial.println("Heartbeat"); 
+
+    // delay(1000);
   // if (device_suspended) {
   //   device.setState(WORK);
   // } else {
   //   device.setState(IDLE); 
   // }
   
-  packetReceiverPC.loop(); 
+  // packetReceiverPC.loop(); 
   // packetReceiverPI.loop();
+
+  spiReceiverPI.loop(); 
 
   device.loop(); 
   
 }
-
-// #include <Arduino.h>
-
-// extern "C" void tud_suspend_cb(bool remote_wakeup_en)
-// {
-//   device_suspended = true; 
-// }
-
-// extern "C" void tud_resume_cb(void)
-// {
-//   device_suspended = false; 
-// }
