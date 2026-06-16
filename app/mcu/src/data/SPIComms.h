@@ -16,10 +16,10 @@ public:
 
 class SPIComms {
 public:
-    enum class State {
-        WAITING_FOR_HEADER,
-        WAITING_FOR_METADATA,
-        WAITING_FOR_BODY_CHUNK
+    enum State {
+        WAITING_FOR_HEADER = 0,
+        WAITING_FOR_METADATA = 1,
+        WAITING_FOR_BODY_CHUNK = 2
     };
 
 #pragma pack(push, 1)
@@ -47,6 +47,9 @@ private:
     Header m_current_header;
     
     // Permanent, static PSRAM buffers
+    uint8_t* m_header_buf;
+    uint16_t m_header_received; 
+
     uint8_t* m_metadata_buf;
     uint16_t m_metadata_received;
     
@@ -60,8 +63,8 @@ private:
     spi_slave_transaction_t m_async_trans;
     bool m_transaction_queued;
 
-    void sendACK() {
-        m_ack_buf[0] = 0xFF;
+    void sendACK(bool successful = true) {
+        m_ack_buf[0] = successful ? 0xFF : 0x01;
         spi_slave_transaction_t tx = {};
         tx.length = 8; 
         tx.tx_buffer = m_ack_buf;
@@ -91,15 +94,18 @@ private:
 
     void resetSession() {
         m_state = State::WAITING_FOR_HEADER;
+        m_header_received = 0; 
         m_metadata_received = 0;
         m_body_received = 0;
         std::memset(&m_current_header, 0, sizeof(Header));
-        // NOTE: m_metadata_buf and m_body_buf are NEVER freed here anymore.
     }
 
     void invokeHandlers() {
+                LOGLN("Handlienrs???2"); 
+
         for (SPIHandler* handler : m_handlers) {
             if (handler != nullptr) {
+                LOGLN("Handlienrs???"); 
                 handler->onSPIData(
                     m_current_header.type, 
                     m_current_header.metadata_len, 
@@ -115,22 +121,35 @@ private:
         if (m_transaction_queued) return true;
 
         std::memset(&m_async_trans, 0, sizeof(spi_slave_transaction_t));
-        m_async_trans.rx_buffer = m_rx_scratch;
         m_async_trans.tx_buffer = nullptr;
 
         switch (m_state) {
-            case State::WAITING_FOR_HEADER:
-                m_async_trans.length = sizeof(Header) * 8;
-                break;
-            case State::WAITING_FOR_METADATA: {
-                uint32_t remaining = m_current_header.metadata_len - m_metadata_received;
+            case State::WAITING_FOR_HEADER: {
+                uint32_t remaining = sizeof(Header) - m_header_received;
                 uint32_t current_chunk_size = (remaining > m_chunk_size) ? m_chunk_size : remaining;
+                
+                // Route through guaranteed internal DMA SRAM
+                m_async_trans.rx_buffer = m_rx_scratch;
                 m_async_trans.length = current_chunk_size * 8;
                 break;
             }
+
+            case State::WAITING_FOR_METADATA: {
+                uint32_t remaining = m_current_header.metadata_len - m_metadata_received;
+                uint32_t current_chunk_size = (remaining > m_chunk_size) ? m_chunk_size : remaining;
+                
+                // Route through guaranteed internal DMA SRAM
+                m_async_trans.rx_buffer = m_rx_scratch;
+                m_async_trans.length = current_chunk_size * 8;
+                break;
+            }
+
             case State::WAITING_FOR_BODY_CHUNK: {
                 uint32_t remaining = m_current_header.body_len - m_body_received;
                 uint32_t current_chunk_size = (remaining > m_chunk_size) ? m_chunk_size : remaining;
+                
+                // FIX: Route body chunks through internal DMA SRAM to completely bypass PSRAM hardware DMA restrictions
+                m_async_trans.rx_buffer = m_rx_scratch;
                 m_async_trans.length = current_chunk_size * 8;
                 break;
             }
@@ -152,6 +171,7 @@ public:
         : m_host(host), m_mosi(mosi), m_miso(miso), m_cs(cs), m_sclk(sclk), 
           m_chunk_size(chunkSize), m_max_metadata(maxMetadata), m_max_body(maxBody),
           m_state(State::WAITING_FOR_HEADER),
+          m_header_buf(nullptr), m_header_received(0),
           m_metadata_buf(nullptr), m_metadata_received(0), m_body_buf(nullptr), m_body_received(0),
           m_rx_scratch(nullptr), m_transaction_queued(false)
     {
@@ -159,7 +179,8 @@ public:
         m_ack_buf = (uint8_t*)heap_caps_malloc(4, MALLOC_CAP_DMA | MALLOC_CAP_8BIT);
         m_rx_scratch = (uint8_t*)heap_caps_malloc(m_chunk_size, MALLOC_CAP_DMA | MALLOC_CAP_8BIT);
 
-        // Pre-allocate the massive structural blocks permanently inside PSRAM right at boot up
+        // Pre-allocate structural blocks permanently inside PSRAM right at boot up
+        m_header_buf = (uint8_t*)allocatePermanentPSRAM(64);
         m_metadata_buf = (uint8_t*)allocatePermanentPSRAM(m_max_metadata);
         m_body_buf = (uint8_t*)allocatePermanentPSRAM(m_max_body);
     }
@@ -169,7 +190,7 @@ public:
         if (m_ack_buf) free(m_ack_buf);
         if (m_rx_scratch) free(m_rx_scratch);
         
-        // Permanent buffers are only torn down if the wrapper instance lifecycle ends
+        if (m_header_buf) heap_caps_aligned_free(m_header_buf); 
         if (m_metadata_buf) heap_caps_aligned_free(m_metadata_buf);
         if (m_body_buf) heap_caps_aligned_free(m_body_buf);
         
@@ -183,7 +204,6 @@ public:
     }
 
     bool begin() {
-        // Enforce fallback if allocations failed in the constructor
         if ((m_max_metadata > 0 && !m_metadata_buf) || (m_max_body > 0 && !m_body_buf)) {
             LOGLN("SPI Transport cannot begin due to missing PSRAM block allocations!");
             return false;
@@ -195,6 +215,9 @@ public:
         buscfg.sclk_io_num = m_sclk;
         buscfg.quadwp_io_num = -1;
         buscfg.quadhd_io_num = -1;
+        
+        // Fix: Explicitly declare the maximum transfer size limit for the hardware link
+        buscfg.max_transfer_sz = m_chunk_size; 
 
         spi_slave_interface_config_t slvcfg = {};
         slvcfg.mode = 0; 
@@ -229,9 +252,13 @@ public:
             LOG("SPI Async Result Error: ");
             LOGLN(esp_err_to_name(ret));
             m_transaction_queued = false;
+            resetSession();
             queueNextTransaction();
             return;
         }
+
+        LOGLN("Transaction received?");
+        LOGLN(m_state); 
 
         m_transaction_queued = false;
         size_t bytes_received = completed_trans->trans_len / 8;
@@ -240,8 +267,29 @@ public:
             return;
         }
 
+        LOGLN("Not Empty transaction!");
+
+        
+
         switch (m_state) {
             case State::WAITING_FOR_HEADER: {
+
+            //    if (m_header_received + bytes_received <= m_max_metadata) {
+            //         // Copy from internal scratch buffer into our permanent PSRAM metadata block
+            //         std::memcpy(m_header_buf + m_header_received, m_rx_scratch, bytes_received);
+            //         m_header_received += bytes_received;
+
+            //         for (int i = 0; i < bytes_received; i++) {
+            //             LOG(m_rx_scratch[i]); 
+            //             LOG(" ");
+            //         }
+            //         LOGLN();
+                    
+            //         LOG("Header received: "); 
+            //         LOGLN(m_header_received); 
+            //         LOGLN(m_rx_scratch[0]);
+            //     }
+
                 if (bytes_received >= sizeof(Header)) {
                     std::memcpy(&m_current_header, m_rx_scratch, sizeof(Header));
                     
@@ -249,10 +297,9 @@ public:
                     LOG(", MetaLen: "); LOG(m_current_header.metadata_len);
                     LOG(", BodyLen: "); LOGLN(m_current_header.body_len); 
 
-                    // --- BOUNDS CHECK SECURITY INJECTION ---
                     if (m_current_header.metadata_len > m_max_metadata || m_current_header.body_len > m_max_body) {
                         LOGLN("CRITICAL: Incoming Master packet lengths exceed hardware limits! Dropping session.");
-                        sendACK(); // Keep master in sync, but break state sequence out safely
+                        sendACK(); 
                         resetSession();
                         break;
                     }
@@ -272,11 +319,16 @@ public:
             }
 
             case State::WAITING_FOR_METADATA: {
-                // Bounds enforcement confirmation fallback
                 if (m_metadata_received + bytes_received <= m_max_metadata) {
+                    // Copy from internal scratch buffer into our permanent PSRAM metadata block
                     std::memcpy(m_metadata_buf + m_metadata_received, m_rx_scratch, bytes_received);
                     m_metadata_received += bytes_received;
+                    
+                LOG("Metadata received: "); 
+                LOGLN(m_metadata_received); 
+                LOGLN(m_rx_scratch[0]);
                 }
+
 
                 if (m_metadata_received >= m_current_header.metadata_len) {
                     sendACK();
@@ -291,23 +343,46 @@ public:
             }
 
             case State::WAITING_FOR_BODY_CHUNK: {
-                // Bounds enforcement confirmation fallback
                 if (m_body_received + bytes_received <= m_max_body) {
+                    // FIX: Safely copy the chunk from the internal DMA scratchpad to the massive permanent PSRAM buffer
                     std::memcpy(m_body_buf + m_body_received, m_rx_scratch, bytes_received);
                     m_body_received += bytes_received;
+                    
+                LOG("Body received: "); 
+                LOGLN(m_body_received); 
                 }
 
                 sendACK(); 
 
-                if (m_body_received >= m_current_header.body_len) {
-                    LOGLN("Full packet assembled successfully. Broadcasting...");
-                    invokeHandlers();
+                // if (m_body_received >= m_current_header.body_len) {
+                //     // LOGLN("Full packet assembled successfully. Broadcasting...");
+                //     // invokeHandlers();
+                //     // resetSession(); 
+                    if (m_body_received >= m_current_header.body_len) {
+                    LOGLN("Full packet assembled successfully. Resetting link layer...");
+                    
+
+                    // 3. Now that the hardware is safely listening, pass data to your handlers
+                    LOGLN("Broadcasting payload to user handlers...");
+                    invokeHandlers(); 
+
+                    
+                    // 1. Instantly wipe protocol tracking state
                     resetSession(); 
+                    
+                    // 2. Arm the DMA hardware to capture the next frame's header right away
+                    queueNextTransaction(); 
+                    
+                    // Exit out early since we manually handled queueNextTransaction() above
+                    return; 
                 }
+                // }
                 break;
             }
         }
 
+        
         queueNextTransaction();
+
     }
 };
