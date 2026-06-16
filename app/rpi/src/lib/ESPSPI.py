@@ -28,6 +28,8 @@ class ESPSPI:
             reply = self.spi.xfer2([0x00])
             if reply[0] == 0xFF:
                 return True
+            elif reply[0] == 0x01:
+                return False
             time.sleep(0.001)  # Tiny yield to prevent pinning the CPU line
         return False
 
