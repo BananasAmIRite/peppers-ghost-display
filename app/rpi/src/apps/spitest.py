@@ -5,7 +5,7 @@ import lib.comms as comms
 
 spi = ESPSPI()
 
-img = Image.open("image.png").convert("RGB")
+img = Image.open("image.jpg").convert("RGB")
 
 width, height = img.size
 
@@ -24,6 +24,8 @@ for y in range(height):
         buf.append(rgb565 >> 8)
         buf.append(rgb565 & 0xFF)
 
+print(width)
+print(height)
 
 
 spi.send_packet(comms.DEBUG_SET_IMAGE, struct.pack("<HH", width, height), bytes(buf))

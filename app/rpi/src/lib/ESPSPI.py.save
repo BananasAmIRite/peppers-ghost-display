@@ -52,9 +52,9 @@ class ESPSPI:
         # H = uint16_t (metadata_len)
         # I = uint32_t (body_len)
         header_bytes = struct.pack("<BHI", data_type, metadata_len, body_len)
-        print(list(header_bytes));
+        
         # Convert packed bytes into a standard mutable integer list for spidev
-        self.spi.xfer3(list(header_bytes))
+        self.spi.xfer2(list(header_bytes))
         
         if not self._wait_for_ack():
             print("Protocol Error: Timeout waiting for HEADER ACK.")
@@ -65,8 +65,7 @@ class ESPSPI:
         # =====================================================================
         if metadata_len > 0:
             # Metadata is typically short enough to transfer in one transaction
-            print(list(metadata))
-            self.spi.xfer3(list(metadata))
+            self.spi.xfer2(list(metadata))
             if not self._wait_for_ack():
                 print("Protocol Error: Timeout waiting for METADATA ACK.")
                 return False
@@ -80,9 +79,9 @@ class ESPSPI:
                 # Carve out a chunk boundary
                 end_index = min(bytes_sent + self.chunk_size, body_len)
                 chunk = body[bytes_sent:end_index]
-                print(bytes_sent, end_index)
+			                
                 # Transmit the current block
-                self.spi.xfer3(list(chunk))
+                self.spi.xfer2(list(chunk))
                 
                 # The ESP32 code issues an ACK after *each* successfully grabbed chunk
                 if not self._wait_for_ack():
