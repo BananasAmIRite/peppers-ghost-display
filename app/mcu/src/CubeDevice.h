@@ -64,7 +64,7 @@ enum DeviceScreen {
 class CubeDevice : public UARTHandler, public SPIHandler {
     private:
         // DeviceState curState = STARTUP; 
-        DeviceScreen curScreen = STARTUP; 
+        DeviceScreen curScreen = SPOTIFY; 
         
         Screen* screenPtr; 
 
@@ -244,7 +244,7 @@ class CubeDevice : public UARTHandler, public SPIHandler {
                 LOG(", HEIGHT: "); 
                 LOGLN(height); 
 
-                // spotifyScreen.loadBuffer(width, height, data, dataSize);
+                spotifyScreen.loadBuffer(width, height, data, dataSize);
 
 
             }
