@@ -57,6 +57,7 @@ class ESPSPI:
         # PHASE 2: METADATA
         # =====================================================================
         if metadata_len > 0:
+            print(list(metadata))
             self.spi.xfer2(list(metadata))
             if not self._wait_for_ack():
                 print("Protocol Error: No ACK for metadata.")
