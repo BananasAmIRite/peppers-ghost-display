@@ -21,8 +21,8 @@ for y in range(height):
             (b >> 3)
         )
 
-        buf.append(rgb565 >> 8)
         buf.append(rgb565 & 0xFF)
+        buf.append(rgb565 >> 8)
 
 print(width)
 print(height)
