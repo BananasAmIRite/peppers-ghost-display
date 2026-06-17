@@ -1,83 +1,85 @@
 import spidev
 import struct
 import time
+import RPi.GPIO as GPIO
 
+
+class Packet:
+    def __init__(self, packet_type: int, payload: bytes):
+        self.packet_type = packet_type
+        self.payload = payload
+
+    def serialize(self):
+        header = struct.pack(
+            "<BI",
+            self.packet_type,
+            len(self.payload)
+        )
+        return header + self.payload
 
 class ESPSPI:
-    MAGIC = [0xAA, 0x55]
-
     def __init__(self, bus: int = 0, device: int = 0,
-                 max_speed_hz: int = 4000000, chunk_size: int = 4096):
+                 max_speed_hz: int = 20000000, chunk_size: int = 4096, master_status_pin = 24, slave_status_pin = 25):
         self.spi = spidev.SpiDev()
         self.spi.open(bus, device)
         self.spi.max_speed_hz = max_speed_hz
         self.spi.mode = 0
         self.chunk_size = chunk_size
+        self.master_status_pin = master_status_pin
+        self.slave_status_pin = slave_status_pin
 
-    def _wait_for_ack(self, timeout_sec: float = 1.0) -> bool:
-        """
-        Clock out bytes one at a time until we see 0xFF (ACK) or 0x01 (NAK).
-        Uses xfer2 so CS deasserts after every byte, keeping the bus clean.
-        """
-        start = time.time()
-        while (time.time() - start) < timeout_sec:
-            reply = self.spi.xfer2([0x00])
-            if reply[0] == 0xFF:
-                return True
-            if reply[0] == 0x01:
-                print("NAK received.")
-                return False
-            time.sleep(0.001)
-        print("ACK timeout.")
-        return False
+        GPIO.setmode(GPIO.BCM)
 
-    def send_packet(self, data_type: int, metadata: bytes, body: bytes) -> bool:
-        metadata_len = len(metadata)
-        body_len     = len(body)
+        GPIO.setup(master_status_pin, GPIO.OUT, initial=GPIO.HIGH)
+        GPIO.setup(slave_status_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-        # =====================================================================
-        # PHASE 0: MAGIC SYNC
-        # =====================================================================
-        self.spi.xfer2(self.MAGIC)
-        if not self._wait_for_ack():
-            print("Protocol Error: No ACK for magic sync.")
-            return False
+    def wait_for_slave_low(self):
+        print("Waiting for slave low...")
+        while GPIO.input(self.slave_status_pin):
+            time.sleep(0.0001)
+        print("Slave low!")
 
-        # =====================================================================
-        # PHASE 1: HEADER
-        # =====================================================================
-        # < = little-endian  B = uint8  H = uint16  I = uint32
-        header_bytes = struct.pack("<BHI", data_type, metadata_len, body_len)
-        self.spi.xfer2(list(header_bytes))
-        if not self._wait_for_ack():
-            print("Protocol Error: No ACK for header.")
-            return False
+    def wait_for_slave_high(self):
+        print("Waiting for slave high...")
+        while not GPIO.input(self.slave_status_pin):
+            time.sleep(0.0001)
+        print("Slave high!")
 
-        # =====================================================================
-        # PHASE 2: METADATA
-        # =====================================================================
-        if metadata_len > 0:
-            print(list(metadata))
-            self.spi.xfer2(list(metadata))
-            if not self._wait_for_ack():
-                print("Protocol Error: No ACK for metadata.")
-                return False
+    def send_packet(self, data_type: int, body: bytes) -> bool:
+        packet = Packet(data_type, body)
+        data = packet.serialize()
 
-        # =====================================================================
-        # PHASE 3: BODY (chunked)
-        # =====================================================================
-        if body_len > 0:
-            bytes_sent = 0
-            while bytes_sent < body_len:
-                end_index = min(bytes_sent + self.chunk_size, body_len)
-                chunk = body[bytes_sent:end_index]
-                self.spi.xfer2(list(chunk))
-                if not self._wait_for_ack():
-                    print(f"Protocol Error: No ACK for body chunk at offset {bytes_sent}.")
-                    return False
-                bytes_sent = end_index
+        print(f"Sending {len(data)} bytes")
 
-        return True
+        GPIO.output(self.master_status_pin, GPIO.LOW)
+
+        self.wait_for_slave_low()
+
+        offset = 0
+
+        while offset < len(data):
+            chunk = data[offset:offset + self.chunk_size]
+
+            # if len(chunk) < RX_SIZE:
+            #     chunk += bytes(RX_SIZE - len(chunk))
+
+            print("Transferring bytes")
+            self.spi.xfer3(chunk)
+
+            offset += len(chunk)
+
+            self.wait_for_slave_high()
+
+            if offset < len(data):
+                self.wait_for_slave_low()
+
+
+        GPIO.output(self.master_status_pin, GPIO.HIGH)
+        # print("Waiting for final slave ready...")
+        self.wait_for_slave_high()
+
+
+        print("Done")
 
     def close(self):
         self.spi.close()

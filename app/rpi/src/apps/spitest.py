@@ -28,4 +28,5 @@ print(width)
 print(height)
 
 
-spi.send_packet(comms.DEBUG_SET_IMAGE, struct.pack("<HH", width, height), bytes(buf))
+# spi.send_packet(comms.DEBUG_SET_IMAGE, struct.pack("<HH", width, height), bytes(buf))
+spi.send_packet(comms.DEBUG_SET_IMAGE, bytes(buf))
