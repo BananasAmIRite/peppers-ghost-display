@@ -16,7 +16,7 @@ class SpotifyScreen : public Renderable {
         std::shared_ptr<GFXcanvas16> curBuffer; 
 
     public: 
-        SpotifyScreen() : curBuffer(nullptr) {
+        SpotifyScreen() {
             
         }
 
@@ -28,7 +28,7 @@ class SpotifyScreen : public Renderable {
 
         void render(Adafruit_GFX* tft) override {
 
-            if (curBuffer != nullptr) drawScaledRGBBitmap(*tft, *curBuffer, 0, 0, 1); 
+            drawScaledRGBBitmap(*tft, *curBuffer, 0, 0, 1); 
 
         }
 };

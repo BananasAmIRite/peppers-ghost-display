@@ -265,10 +265,10 @@ public:
                     m_state = State::WAITING_FOR_HEADER;
                 } else {
                     // Noise or stale data — stay in WAITING_FOR_MAGIC and discard.
-                    LOG("Bad magic");
-                    // for (size_t i = 0; i < bytes_received; i++) {
-                    //     LOG(m_rx_scratch[i]); LOG(" ");
-                    // }
+                    LOG("Bad magic: ");
+                    for (size_t i = 0; i < bytes_received; i++) {
+                        LOG(m_rx_scratch[i]); LOG(" ");
+                    }
                     LOGLN();
                     // No ACK, no state change — just re-arm and wait for next attempt.
                 }
@@ -316,8 +316,6 @@ public:
             case State::WAITING_FOR_METADATA: {
                 if (m_metadata_received + bytes_received > m_max_metadata) {
                     LOGLN("CRITICAL: Metadata overflow. Dropping session.");
-                    LOGLN(m_metadata_received + bytes_received); 
-                    LOGLN(m_max_metadata);
                     sendACK(false);
                     resetSession();
                     break;
