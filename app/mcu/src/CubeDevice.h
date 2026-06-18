@@ -10,26 +10,9 @@
 #include "data/UARTComms.h"
 #include "data/SPIStream.h"
 #include "rendering/screens/work/spotify/SpotifyScreen.h"
+#include "packets.h"
 
 
-enum PacketType {
-    CURSOR_SET = 0x10, 
-    CURSOR_VISIBLE = 0x11, 
-    CURSOR_CLICK = 0x12, 
-    CURSOR_DOWN = 0x13, 
-    CURSOR_UP = 0x14,
-    
-    SET_SCREEN = 0x20, 
-    SET_SCREEN_NOTIF = 0x21, 
-
-    WEATHER_SET = 0x30, 
-    TASKS_ADD = 0x31, 
-    CALENDAR_ADD = 0x32, 
-
-
-    // debug
-    DEBUG_SET_IMAGE = 0xF0
-};
 
 // /**
 //  * State machine goes like this: 
@@ -68,6 +51,9 @@ class CubeDevice : public UARTHandler, public SPIStreamHandler {
         
         Screen* screenPtr; 
 
+        UARTComms* packetReceiverPtr; 
+        SPIStream* spiStreamPtr; 
+
         
         // MultipleScreen loadingScreenComposed;
         // MultipleScreen idleScreenComposed; 
@@ -98,7 +84,7 @@ class CubeDevice : public UARTHandler, public SPIStreamHandler {
 
 
     public: 
-        CubeDevice(Screen* scrnPtr, Adafruit_ImageReader* reader): 
+        CubeDevice(Screen* scrnPtr, Adafruit_ImageReader* reader, UARTComms* packetReceiver, SPIStream* spiReceiver) : 
             screenPtr(scrnPtr), 
             // loadingScreenComposed(), 
             // idleScreenComposed(), 
@@ -108,7 +94,9 @@ class CubeDevice : public UARTHandler, public SPIStreamHandler {
             idleScreen(), 
             weatherScreen(), 
             tasksScreen(), 
-            spotifyScreen()
+            spotifyScreen(), 
+            packetReceiverPtr(packetReceiver), 
+            spiStreamPtr(spiReceiver)
              {
 
                 // init screens
@@ -129,6 +117,9 @@ class CubeDevice : public UARTHandler, public SPIStreamHandler {
                 // loadingScreenComposed.addScreen(cursorScreen); 
                 // idleScreenComposed.addScreen(cursorScreen); 
                 // workScreenComposed.addScreen(cursorScreen); 
+
+                spiStreamPtr->addHandler(&spotifyScreen); 
+                packetReceiver->addUARTHandler(&spotifyScreen); 
         }
 
         
@@ -235,7 +226,7 @@ class CubeDevice : public UARTHandler, public SPIStreamHandler {
 
         void onSPIData(uint8_t type, uint32_t length, uint8_t* body) override {
             LOGLN(type); 
-            if (type == DEBUG_SET_IMAGE) {
+            if (type == SPOTIFY_SET_IMAGE) {
                 if (length < 4) return; 
 
                 uint16_t width = ((uint16_t)body[1] << 8) | body[0]; 

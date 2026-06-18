@@ -62,7 +62,7 @@ SPIStream spiReceiverPI(SPI3_HOST, 15, 16);
 
 
 // make device
-CubeDevice device(&screen, &reader);
+CubeDevice device(&screen, &reader, &packetReceiverPC, &spiReceiverPI);
 
 SdSpiConfig config(
     TFT_SD_CS,
@@ -135,7 +135,7 @@ void loop() {
   //   device.setState(IDLE); 
   // }
   
-  // packetReceiverPC.loop(); 
+  packetReceiverPC.loop(); 
   // packetReceiverPI.loop();
 
   spiReceiverPI.loop(); 

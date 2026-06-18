@@ -1,11 +1,11 @@
 from PIL import Image
 
-IMAGE_WIDTH = 16
-IMAGE_HEIGHT = 16
-TOTAL_X = 5
+IMAGE_WIDTH = 5
+IMAGE_HEIGHT = 5
+TOTAL_X = 1
 TOTAL_Y = 1
-INPUT_FILE = "raincustom.png"
-OUTPUT_PREFIX = "rainc"
+INPUT_FILE = "slider_button.png"
+OUTPUT_PREFIX = "sliderbtn"
 CONVERT_ALPHA = True
 
 # # Replace 'input.png' with your file path

@@ -4,6 +4,7 @@ import serial
 import time
 import src.lib.ESPSerial as ESPSerial
 import src.lib.PeriodicThread as PeriodicThread
+import src.lib.ESPSPI as ESPSPI
 from src.threads.weather_query import weather_query 
 
 
@@ -17,6 +18,7 @@ BAUDRATE = 115200  # Must match the baud rate of the connected device
 if __name__ == "__main__":
 
     ser = ESPSerial.ESPSerial(PORT, BAUDRATE)
+    spi = ESPSPI.ESPSPI()
 
     thread_weather = PeriodicThread.PeriodicThread(60*30, weather_query, ser, LATITUDE, LONGITUDE)
 
