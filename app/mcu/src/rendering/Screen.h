@@ -26,6 +26,7 @@ class Screen {
         uint8_t refreshRate; 
         long lastRenderTime = -1;
         Renderable* toBeRendered = nullptr; 
+        Renderable* auxRenderable = nullptr; 
         GFXcanvas16* buffer = nullptr;
 
     public:
@@ -50,6 +51,13 @@ class Screen {
             if (toBeRendered != nullptr) toBeRendered->onDeactivate();
             if (renderer != nullptr) renderer->onActivate();
             toBeRendered = renderer;
+        }
+
+        void setAuxRenderer(Renderable* renderer) {
+            if (auxRenderable == renderer) return;  // no change, do nothing
+            if (auxRenderable != nullptr) auxRenderable->onDeactivate();
+            if (renderer != nullptr) renderer->onActivate();
+            auxRenderable = renderer;
         }
 
         void clearScreen() {

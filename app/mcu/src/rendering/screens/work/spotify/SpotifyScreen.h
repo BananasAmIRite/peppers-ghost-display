@@ -15,7 +15,7 @@
 #define SCALE 4
 #define BUTTON_WIDTH 5
 
-#define IMG_SCALE 2
+#define IMG_SCALE 3
 
 #define MAX_SONGNAME_WIDTH 12
 #define SCROLL_DELAY_MS 600   // pause at each end before scrolling back
@@ -96,7 +96,7 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
 
     public: 
         SpotifyScreen() : SpriteScreen({"slider0.bmp", "slider1.bmp", "sliderbtn.bmp"}) {
-            setSong("Ed Sheeran - Photograph", 100);
+            setSong("Not Playing...", 100);
             curSong.last_synchronized_millis = millis();
         }
 
@@ -123,7 +123,7 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
 
             // song image
             if (curBuffer != nullptr) {
-                drawScaledRGBBitmap(*tft, *curBuffer, tft->width() / 2 - curBuffer->width() * IMG_SCALE / 2, tft->height() / 3 - curBuffer->height() * IMG_SCALE / 2, IMG_SCALE); 
+                drawScaledRGBBitmap(*tft, *curBuffer, tft->width() / 2 - curBuffer->width() * IMG_SCALE / 2, tft->height() * 3 / 8 - curBuffer->height() * IMG_SCALE / 2, IMG_SCALE); 
             }
 
             // (scrolling) text 
@@ -131,12 +131,12 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
             tft->setTextColor(COLOR_WHITE);
             tft->setTextSize(1); 
 
-            drawCenteredText(tft, getVisibleName().c_str(), tft->width() / 2, tft->height() * 5 / 8); 
+            drawCenteredText(tft, getVisibleName().c_str(), tft->width() / 2, tft->height() * 6 / 8); 
 
 
             // slider
-            drawSprite(tft, 0, tft->width() / 2 - SLIDER_WIDTH * (SCALE + 1) / 2, tft->height() * 3 / 4 - SLIDER_HEIGHT * SCALE / 2, SCALE);
-            drawSprite(tft, 1, tft->width() / 2 - SLIDER_WIDTH * (SCALE - 1) / 2, tft->height() * 3 / 4 - SLIDER_HEIGHT * SCALE / 2, SCALE);
+            drawSprite(tft, 0, tft->width() / 2 - SLIDER_WIDTH * (SCALE + 1) / 2, tft->height() * 7 / 8 - SLIDER_HEIGHT * SCALE / 2, SCALE);
+            drawSprite(tft, 1, tft->width() / 2 - SLIDER_WIDTH * (SCALE - 1) / 2, tft->height() * 7 / 8 - SLIDER_HEIGHT * SCALE / 2, SCALE);
 
 
             // slider head
@@ -145,15 +145,13 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
             uint16_t trueElapsedSecs = curSong.elapsed_seconds + (millis() - curSong.last_synchronized_millis) / 1000;
 
             float progress = constrain(((float) trueElapsedSecs) / curSong.length_seconds, 0, 1);
-            drawSprite(tft, 2, left + (right - left) * progress - BUTTON_WIDTH * SCALE / 2, tft->height() * 3 / 4 - BUTTON_WIDTH * SCALE / 2, SCALE); 
+            drawSprite(tft, 2, left + (right - left) * progress - BUTTON_WIDTH * SCALE / 2, tft->height() * 7 / 8 - BUTTON_WIDTH * SCALE / 2, SCALE); 
         }
 
 
         // handlers
-        void onSPIData(uint8_t type, uint32_t bodyLen, uint8_t* body) override {}
-
-        void onUARTData(uint8_t type, uint8_t* data, uint8_t size) override {
-
+        void onSPIData(uint8_t type, uint32_t size, uint8_t* data) override {
+            
             LOGLN(type);
             if (type == SPOTIFY_SET_IMAGE) {
                 if (size < 4) return; 
@@ -174,7 +172,13 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
                 loadBuffer(width, height, data + 4, width * height * 2);
 
 
-            } else if (type == SPOTIFY_SET_SONG) {
+            }
+        }
+
+        void onUARTData(uint8_t type, uint8_t* data, uint8_t size) override {
+
+            LOGLN(type);
+            if (type == SPOTIFY_SET_SONG) {
                 if (size < 6) return; 
                 uint16_t nameSize;
                 uint16_t duration;

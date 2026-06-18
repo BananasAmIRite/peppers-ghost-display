@@ -6,6 +6,7 @@ void Screen::tryRender() {
         if (toBeRendered != NULL) {
             clearScreen();
             toBeRendered->render(buffer);
+            auxRenderable->render(buffer);
             update(); 
         }
 

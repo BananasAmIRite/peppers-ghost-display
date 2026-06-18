@@ -1,5 +1,3 @@
-import lib.comms.ESPSerial as ESPSerial
-from lib.comms.ESPSPI import ESPSPI
 import lib.comms.comms as comms
 import base64
 from PIL import Image
@@ -9,12 +7,14 @@ from utils.image2buf import image_to_buf
 import os
 import requests
 from dotenv import load_dotenv
+from screens import ScreenType
 
 
 class SpotifyState:
     def __init__(self):
         self.access_token = ""
         self.last_played_id = ""
+        self.playing = False
 
     def set_access_token(self, token):
         self.access_token = token
@@ -25,6 +25,12 @@ class SpotifyState:
         self.last_played_id = id
     def get_last_played_id(self):
         return self.last_played_id
+    
+    def set_playing(self, playing):
+        self.playing = playing
+
+    def get_playing(self):
+        return self.playing
 
 def spotify_get_access_token(spotify_client_id: str, spotify_secret: str):
     with open('./threads/spotify/refresh_token.txt', 'r') as f:
@@ -47,7 +53,7 @@ def spotify_get_access_token(spotify_client_id: str, spotify_secret: str):
 
         return response.json()['access_token']
 
-def spotify_query(state, mgr, spotify_client_id: str, spotify_secret: str):
+def spotify_query(state: SpotifyState, mgr, spotify_client_id: str, spotify_secret: str):
     if state.get_access_token() == "":
         print("getting new access token")
         state.set_access_token(spotify_get_access_token(spotify_client_id, spotify_secret))
@@ -62,12 +68,22 @@ def spotify_query(state, mgr, spotify_client_id: str, spotify_secret: str):
 
     if response.status_code == 204:
         # TODO: implement not playing anything
+        print("Not playing anything...")
+        if state.get_playing():
+            # transition from playing to not playing
+            mgr.remove_temp_screen(ScreenType.SCREEN_SPOTIFY)
+            state.set_playing(False)
         pass
     elif response.status_code != 200:
         # error, assume expired access token
         state.set_access_token("")
         return
     else:
+        # update state and temp screens
+        if not state.get_playing():
+            mgr.add_temp_screen(ScreenType.SCREEN_SPOTIFY)
+            state.set_playing(True)
+
         json = response.json()
         name = ((json["item"]["artists"][0]["name"] + " - ") if len(json["item"]["artists"]) > 0 else "") + json["item"]["name"]
         duration = int(json["item"]["duration_ms"] / 1000)
@@ -107,20 +123,20 @@ def spotify_query(state, mgr, spotify_client_id: str, spotify_secret: str):
         else:
             mgr.send_uart_message(comms.SPOTIFY_UPDATE_SONG, struct.pack("<H", progress))
 
+        
+        state.set_last_id(json["item"]["id"])
 
 
 
-
-    state.set_last_id(json["item"]["id"])
 
 
 if __name__ == '__main__':
     load_dotenv()
     state = SpotifyState()
-    ser = ESPSerial.ESPSerial("/dev/serial0", 115200)
-    spi = ESPSPI()
-    ser.open()
+    # ser = ESPSerial.ESPSerial("/dev/serial0", 115200)
+    # spi = ESPSPI()
+    # ser.open()
     client_id = os.getenv("SPOTIFY_CLIENT_ID")
     client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
 
-    spotify_query(state, ser, spi, client_id, client_secret)
+    spotify_query(state, None, client_id, client_secret)

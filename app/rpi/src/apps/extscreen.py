@@ -6,8 +6,8 @@ from screeninfo import get_monitors
 import time
 
 
-CUBE_W = 320
-CUBE_H = 240
+CUBE_W = 480
+CUBE_H = 320
 
 
 class CubeBridge:

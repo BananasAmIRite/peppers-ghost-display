@@ -123,18 +123,13 @@ class CubeDevice : public UARTHandler, public SPIStreamHandler {
                 spiStreamPtr->addHandler(&spotifyScreen); 
                 packetReceiver->addUARTHandler(&spotifyScreen); 
                 packetReceiver2->addUARTHandler(&spotifyScreen); 
+
+                screenPtr->setAuxRenderer(&cursorScreen);
         }
 
         
         void loop() {
             // rendering
-            // if (curState == STARTUP) {
-            // screenPtr->setRenderer(&loadingScreenComposed); 
-            // } else if (curState == IDLE) {
-            //     screenPtr->setRenderer(&idleScreenComposed); 
-            // } else if (curState == WORK) {
-            //     screenPtr->setRenderer(&workScreenComposed); 
-            // }
 
             switch (curScreen) {
                 default:

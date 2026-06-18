@@ -12,18 +12,14 @@ import tty
 import termios
 import sys
 import select
+from screens import ScreenType
 
 
 class ScreenLayer(Enum):
     PERMANENT = 0
     TEMPORARY = 1
 
-class ScreenType(Enum):
-    SCREEN_IDLE = 0x01
-    SCREEN_WEATHER = 0x02
-    SCREEN_TASKS = 0x03
 
-    SCREEN_SPOTIFY = 0x04
 
 
 # Cambridge, MA — change to your location
@@ -35,7 +31,7 @@ class ScreenStateManager:
     def __init__(self, ser: ESPSerial, spi: ESPSPI):
         load_dotenv()
 
-        self.perm_screens = [ScreenType.SCREEN_IDLE, ScreenType.SCREEN_WEATHER, ScreenType.SCREEN_SPOTIFY]
+        self.perm_screens = [ScreenType.SCREEN_IDLE, ScreenType.SCREEN_WEATHER, ScreenType.SCREEN_TASKS]
         self.temp_screens = []
         self.screen_threads = []
         # uart to esp Serial1
@@ -133,12 +129,15 @@ class ScreenStateManager:
     # state management
     def add_temp_screen(self, temp_screen: ScreenType):
         if temp_screen in self.temp_screens: return
+        print("Added temp screen:" , temp_screen)
         self.temp_screens.append(temp_screen)
         
         # TODO: notify new temp screen
 
     def remove_temp_screen(self, temp_screen: ScreenType):
         if temp_screen not in self.temp_screens: return
+        print("Removed temp screen:" , temp_screen)
+
         temp_scrn_idx = self.temp_screens.index(temp_screen)
         
         # auto update state to make sure nothing weird happens (we want it to go to the last screen)

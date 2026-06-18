@@ -45,7 +45,7 @@ struct Chicken {
 
 class ChickenScreen : public SpriteScreen {
     private:
-    static const uint8_t SPRITE_SCALE = 5; 
+    static const uint8_t SPRITE_SCALE = 6; 
     static const uint16_t SPRITE_POS_INC = 16; 
     static const uint8_t SPRITE_SIZE = 16; 
 
