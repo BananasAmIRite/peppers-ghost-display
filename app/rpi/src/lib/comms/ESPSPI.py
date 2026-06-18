@@ -2,6 +2,7 @@ import spidev
 import struct
 import time
 import RPi.GPIO as GPIO
+import threading
 
 
 class Packet:
@@ -20,6 +21,7 @@ class Packet:
 class ESPSPI:
     def __init__(self, bus: int = 0, device: int = 0,
                  max_speed_hz: int = 20000000, chunk_size: int = 4096, master_status_pin = 24, slave_status_pin = 25):
+        self._lock = threading.RLock()
         self.spi = spidev.SpiDev()
         self.spi.open(bus, device)
         self.spi.max_speed_hz = max_speed_hz
@@ -48,44 +50,46 @@ class ESPSPI:
         print("Slave high!")
 
     def send_packet(self, data_type: int, body: bytes) -> bool:
-        packet = Packet(data_type, body)
-        data = packet.serialize()
+        with self._lock:
+            packet = Packet(data_type, body)
+            data = packet.serialize()
 
-        print(f"Sending {len(data)} bytes")
+            print(f"Sending {len(data)} bytes")
 
-        GPIO.output(self.master_status_pin, GPIO.LOW)
+            GPIO.output(self.master_status_pin, GPIO.LOW)
 
-        self.wait_for_slave_low()
+            self.wait_for_slave_low()
 
-        offset = 0
+            offset = 0
 
-        while offset < len(data):
-            chunk = data[offset:offset + self.chunk_size]
+            while offset < len(data):
+                chunk = data[offset:offset + self.chunk_size]
 
-            # if len(chunk) < RX_SIZE:
-            #     chunk += bytes(RX_SIZE - len(chunk))
+                # if len(chunk) < RX_SIZE:
+                #     chunk += bytes(RX_SIZE - len(chunk))
 
-            print("Transferring bytes")
-            self.spi.xfer3(chunk)
+                print("Transferring bytes")
+                self.spi.xfer3(chunk)
 
-            offset += len(chunk)
+                offset += len(chunk)
 
-            # time.sleep(0.001)
+                # time.sleep(0.001)
 
+                self.wait_for_slave_high()
+
+                if offset < len(data):
+                    # time.sleep(0.001)
+                    self.wait_for_slave_low()
+
+
+
+            GPIO.output(self.master_status_pin, GPIO.HIGH)
+            # print("Waiting for final slave ready...")
             self.wait_for_slave_high()
 
-            if offset < len(data):
-                # time.sleep(0.001)
-                self.wait_for_slave_low()
 
-
-
-        GPIO.output(self.master_status_pin, GPIO.HIGH)
-        # print("Waiting for final slave ready...")
-        self.wait_for_slave_high()
-
-
-        print("Done")
+            print("Done")
 
     def close(self):
-        self.spi.close()
+        with self._lock:
+            self.spi.close()

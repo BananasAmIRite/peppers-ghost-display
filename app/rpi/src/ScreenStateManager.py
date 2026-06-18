@@ -8,6 +8,10 @@ import lib.comms.comms as comms
 from dotenv import load_dotenv
 import os
 import time
+import tty
+import termios
+import sys
+import select
 
 
 class ScreenLayer(Enum):
@@ -52,8 +56,11 @@ class ScreenStateManager:
 
 
     # initialization
-    def open_serial(self):
+    def init(self):
         self.ser.open()
+        self.init_threads()
+        self.start_threads()
+        self.update_screen()
 
     def init_threads(self):
         
@@ -72,12 +79,53 @@ class ScreenStateManager:
             t.start()
 
     def wait_program(self):
+        # try:
+        #     while True:
+        #         time.sleep(1)
+        # except KeyboardInterrupt:
+        #     print("\nProgram terminated gracefully.")
+
+        # for t in self.screen_threads: 
+        #     t.stop()
+        #     t.join()
+        print("\nControl device screens using WASD keys (Ctrl+C to exit):")
+        print("  W -> Swipe Up    |  A -> Swipe Left")
+        print("  S -> Swipe Down  |  D -> Swipe Right\n")
+
+        # Save old terminal settings to restore later
+        old_settings = termios.tcgetattr(sys.stdin)
         try:
+            # Put terminal into cbreak mode (reads keys instantly without waiting for Enter)
+            tty.setcbreak(sys.stdin.fileno())
+            
             while True:
-                time.sleep(1)
+                # Check if there is data waiting to be read in stdin (timeout of 0.1s)
+                if select.select([sys.stdin], [], [], 0.1)[0]:
+                    key = sys.stdin.read(1).lower()
+                    
+                    if key == 'a':
+                        print("Key 'A' pressed: Swiping Left")
+                        self.swipe_left()
+                    elif key == 'd':
+                        print("Key 'D' pressed: Swiping Right")
+                        self.swipe_right()
+                    elif key == 'w':
+                        print("Key 'W' pressed: Swiping Up")
+                        self.swipe_up()
+                    elif key == 's':
+                        print("Key 'S' pressed: Swiping Down")
+                        self.swipe_down()
+                        
+                # Minimal sleep to prevent CPU spiking
+                time.sleep(0.01)
+                
         except KeyboardInterrupt:
             print("\nProgram terminated gracefully.")
+        finally:
+            # Crucial: Reset terminal settings back to normal
+            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
 
+        # Stop and join threads
         for t in self.screen_threads: 
             t.stop()
             t.join()
@@ -166,9 +214,6 @@ class ScreenStateManager:
     def send_uart_message(self, type: int, payload: bytearray):
         self.ser.write_message(type, payload)
     
-    def send_spi_message(self, type: int, payload: bytearray):
-        self.spi.write_message(type, payload)
-
-    def send_spi_chunked_message(self, type_header: int, type_data: int, payload_header: bytearray, payload_data: bytearray):
-        self.spi.write_chunked_message(type_header, type_data, payload_header, payload_data)
+    def send_spi_message(self, data_type: int, body: bytes):
+        self.spi.write_message(data_type, body)
     

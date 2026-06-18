@@ -9,6 +9,7 @@ from src.utils.image2buf import image_to_buf
 import os
 import requests
 from dotenv import load_dotenv
+import ScreenStateManager
 
 
 
@@ -48,7 +49,7 @@ def spotify_get_access_token(spotify_client_id: str, spotify_secret: str):
 
         return response.json()['access_token']
 
-def spotify_query(state: SpotifyState, ser: ESPSerial.ESPSerial, spi, spotify_client_id: str, spotify_secret: str):
+def spotify_query(mgr: ScreenStateManager.ScreenStateManager, spi, spotify_client_id: str, spotify_secret: str):
     if state.get_access_token() == "":
         print("getting new access token")
         state.set_access_token(spotify_get_access_token(spotify_client_id, spotify_secret))
@@ -102,7 +103,7 @@ def spotify_query(state: SpotifyState, ser: ESPSerial.ESPSerial, spi, spotify_cl
                 width, height, buf = image_to_buf(img)
 
                 print(len(buf), width, height)
-                spi.send_packet(comms.SPOTIFY_SET_IMAGE, struct.pack("<HH", width, height) + bytes(buf))
+                mgr.send_spi_packet(comms.SPOTIFY_SET_IMAGE, struct.pack("<HH", width, height) + bytes(buf))
 
 
 
