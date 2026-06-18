@@ -153,8 +153,28 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
         void onSPIData(uint8_t type, uint32_t bodyLen, uint8_t* body) override {}
 
         void onUARTData(uint8_t type, uint8_t* data, uint8_t size) override {
+
             LOGLN(type);
-            if (type == SPOTIFY_SET_SONG) {
+            if (type == SPOTIFY_SET_IMAGE) {
+                if (size < 4) return; 
+
+                uint16_t width = ((uint16_t)data[1] << 8) | data[0]; 
+                uint16_t height = ((uint16_t)data[3] << 8) | data[2];
+
+                LOG("WIDTH: ");
+                LOG(width); 
+                LOG(", HEIGHT: "); 
+                LOGLN(height);
+
+                if (size < 4 + width * height * 2) return; 
+
+                LOGLN(length); 
+
+
+                loadBuffer(width, height, data + 4, width * height * 2);
+
+
+            } else if (type == SPOTIFY_SET_SONG) {
                 if (size < 6) return; 
                 uint16_t nameSize;
                 uint16_t duration;
@@ -171,6 +191,11 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
 
                 setSong(songName, duration); 
                 updateSongState(progress);
+            } else if (type == SPOTIFY_UPDATE_SONG) {
+                if (size < 2) return; 
+                uint16_t progress;
+                memcpy(&progress, data, 2);
+                updateSongState(progress); 
             }
         }
 };

@@ -75,19 +75,20 @@ def spotify_query(state, mgr, spotify_client_id: str, spotify_secret: str):
 
         name_bytes = name.encode("utf-8")
 
-        payload = (
-            struct.pack(
-                "<HHH",
-                len(name_bytes),
-                duration,
-                progress,
-            )
-            + name_bytes
-        )
-
-        mgr.send_uart_message(comms.SPOTIFY_SET_SONG, payload)
 
         if (json["item"]["id"] != state.get_last_played_id()): # new song, update image
+                
+            payload = (
+                struct.pack(
+                    "<HHH",
+                    len(name_bytes),
+                    duration,
+                    progress,
+                )
+                + name_bytes
+            )
+
+            mgr.send_uart_message(comms.SPOTIFY_SET_SONG, payload)
             imgs = json["item"]["album"]["images"]
             i_64s = [img for img in imgs if img['height'] == 64 and img['width'] == 64]
             if len(i_64s) > 0:
@@ -101,7 +102,12 @@ def spotify_query(state, mgr, spotify_client_id: str, spotify_secret: str):
                 width, height, buf = image_to_buf(img)
 
                 print(len(buf), width, height)
+                
                 mgr.send_spi_message(comms.SPOTIFY_SET_IMAGE, struct.pack("<HH", width, height) + bytes(buf))
+        else:
+            mgr.send_uart_message(comms.SPOTIFY_UPDATE_SONG, struct.pack("<H", progress))
+
+
 
 
 
