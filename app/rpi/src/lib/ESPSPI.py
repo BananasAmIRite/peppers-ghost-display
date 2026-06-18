@@ -35,12 +35,14 @@ class ESPSPI:
 
     def wait_for_slave_low(self):
         print("Waiting for slave low...")
+        print(GPIO.input(self.slave_status_pin))
         while GPIO.input(self.slave_status_pin):
             time.sleep(0.0001)
         print("Slave low!")
 
     def wait_for_slave_high(self):
         print("Waiting for slave high...")
+        print(GPIO.input(self.slave_status_pin))
         while not GPIO.input(self.slave_status_pin):
             time.sleep(0.0001)
         print("Slave high!")
@@ -68,10 +70,14 @@ class ESPSPI:
 
             offset += len(chunk)
 
+            # time.sleep(0.001)
+
             self.wait_for_slave_high()
 
             if offset < len(data):
+                # time.sleep(0.001)
                 self.wait_for_slave_low()
+
 
 
         GPIO.output(self.master_status_pin, GPIO.HIGH)
