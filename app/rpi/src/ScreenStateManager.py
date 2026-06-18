@@ -35,7 +35,7 @@ class ScreenStateManager:
     def __init__(self, ser: ESPSerial, spi: ESPSPI):
         load_dotenv()
 
-        self.perm_screens = [ScreenType.SCREEN_IDLE, ScreenType.SCREEN_WEATHER, ScreenType.SCREEN_TASKS]
+        self.perm_screens = [ScreenType.SCREEN_IDLE, ScreenType.SCREEN_WEATHER, ScreenType.SCREEN_SPOTIFY]
         self.temp_screens = []
         self.screen_threads = []
         # uart to esp Serial1
@@ -150,7 +150,7 @@ class ScreenStateManager:
     def update_screen(self):
         # make sure state is valid (if not, make it valid)
         if self.cur_screen_state["type"] == ScreenLayer.TEMPORARY:
-            if len(self.perm_screens) <= 0: 
+            if len(self.temp_screens) <= 0: 
                 self.cur_screen_state["type"] = ScreenLayer.PERMANENT # transition to permanent screens (temp screens expired :/)
 
         
@@ -217,5 +217,5 @@ class ScreenStateManager:
         self.ser.write_message(type, payload)
     
     def send_spi_message(self, data_type: int, body: bytes):
-        self.spi.write_message(data_type, body)
+        self.spi.send_packet(data_type, body)
     
