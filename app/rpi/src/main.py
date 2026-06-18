@@ -1,12 +1,12 @@
 import lib.comms.comms as comms
-import src.lib.weather as weather
+import lib.weather as weather
 import serial
 import time
 import lib.comms.ESPSerial as ESPSerial
-import src.lib.PeriodicThread as PeriodicThread
+import lib.PeriodicThread as PeriodicThread
 import lib.comms.ESPSPI as ESPSPI
-from src.threads.weather_query import weather_query 
-from src.threads.spotify_query import spotify_query, SpotifyState
+from threads.weather_query import weather_query 
+from threads.spotify_query import spotify_query, SpotifyState
 from dotenv import load_dotenv
 import os
 from ScreenStateManager import ScreenStateManager

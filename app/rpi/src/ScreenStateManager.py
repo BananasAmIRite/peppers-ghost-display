@@ -1,6 +1,6 @@
-import src.lib.PeriodicThread as PeriodicThread
-from src.threads.weather_query import weather_query
-from src.threads.spotify_query import spotify_query, SpotifyState
+import lib.PeriodicThread as PeriodicThread
+from threads.weather_query import weather_query
+from threads.spotify_query import spotify_query, SpotifyState
 from lib.comms.ESPSerial import ESPSerial
 from lib.comms.ESPSPI import ESPSPI
 from enum import Enum
@@ -15,15 +15,15 @@ import select
 
 
 class ScreenLayer(Enum):
-    PERMANENT = 0, 
+    PERMANENT = 0
     TEMPORARY = 1
 
 class ScreenType(Enum):
-    SCREEN_IDLE = 0x00, 
-    SCREEN_WEATHER = 0x01,
-    SCREEN_TASKS = 0x02,
+    SCREEN_IDLE = 0x01
+    SCREEN_WEATHER = 0x02
+    SCREEN_TASKS = 0x03
 
-    SCREEN_SPOTIFY = 0x10
+    SCREEN_SPOTIFY = 0x04
 
 
 # Cambridge, MA — change to your location
@@ -68,8 +68,8 @@ class ScreenStateManager:
         client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
         # TODO: add more threads here
         # represents update threads for each of the screens (camera update thread will be separate from this!)
-        thread_weather = PeriodicThread.PeriodicThread(60*30, weather_query, self.ser, LATITUDE, LONGITUDE)
-        thread_spotify = PeriodicThread.PeriodicThread(10, spotify_query, self.spotify_state, self.ser, self.spi, client_id, client_secret)
+        thread_weather = PeriodicThread.PeriodicThread(60*30, weather_query, self, LATITUDE, LONGITUDE)
+        thread_spotify = PeriodicThread.PeriodicThread(10, spotify_query, self.spotify_state, self, client_id, client_secret)
 
         self.screen_threads.append(thread_weather)
         self.screen_threads.append(thread_spotify)
@@ -155,20 +155,22 @@ class ScreenStateManager:
 
         
         if self.cur_screen_state["idx_temp"] >= len(self.temp_screens):
-                self.cur_screen_state["idx_temp"] = len(self.temp_screens - 1) # snap to end of screens
+                self.cur_screen_state["idx_temp"] = len(self.temp_screens) - 1 # snap to end of screens
         elif self.cur_screen_state["idx_temp"] < 0:
             self.cur_screen_state["idx_temp"] = 0
         
         # do the same bounds checks for permanent screens
         if self.cur_screen_state["idx_perm"] >= len(self.perm_screens):
-            self.cur_screen_state["idx_perm"] = len(self.perm_screens - 1) # snap to end of screens
+            self.cur_screen_state["idx_perm"] = len(self.perm_screens) - 1 # snap to end of screens
         elif self.cur_screen_state["idx_perm"] < 0:
             self.cur_screen_state["idx_perm"] = 0
 
         # now determine screen state
         screen_id = self.perm_screens[self.cur_screen_state["idx_perm"]] if self.cur_screen_state["type"] == ScreenLayer.PERMANENT else self.temp_screens[self.cur_screen_state["idx_temp"]]
 
-        self.send_uart_message(comms.SET_SCREEN, bytearray(screen_id))
+
+        print(screen_id, screen_id.value)
+        self.send_uart_message(comms.SET_SCREEN, bytearray([screen_id.value]))
 
     # gestures
     def swipe_left(self):

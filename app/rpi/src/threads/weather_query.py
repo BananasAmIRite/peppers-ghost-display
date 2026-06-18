@@ -1,9 +1,9 @@
 import lib.comms.ESPSerial as ESPSerial
-import src.lib.weather as weather
+import lib.weather as weather
 import lib.comms.comms as comms
 
 
-def weather_query(ser: ESPSerial.ESPSerial, lat: float, long: float):
+def weather_query(mgr, lat: float, long: float):
     print("Fetching weather...")
     w = weather.fetch_weather(lat, long)
     print(f"  Current: {w['current_temp']:.1f} F")
@@ -14,5 +14,5 @@ def weather_query(ser: ESPSerial.ESPSerial, lat: float, long: float):
 
     payload = weather.build_weather_payload(w)
 
-    ser.write_uart_message(comms.WEATHER, payload)
+    mgr.send_uart_message(comms.WEATHER, payload)
 

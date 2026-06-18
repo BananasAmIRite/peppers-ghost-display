@@ -5,12 +5,10 @@ import base64
 from PIL import Image
 from io import BytesIO
 import struct
-from src.utils.image2buf import image_to_buf
+from utils.image2buf import image_to_buf
 import os
 import requests
 from dotenv import load_dotenv
-import ScreenStateManager
-
 
 
 class SpotifyState:
@@ -29,7 +27,7 @@ class SpotifyState:
         return self.last_played_id
 
 def spotify_get_access_token(spotify_client_id: str, spotify_secret: str):
-    with open('./src/threads/spotify/refresh_token.txt', 'r') as f:
+    with open('./threads/spotify/refresh_token.txt', 'r') as f:
         token = f.read().strip()
         auth = base64.b64encode(
             f"{spotify_client_id}:{spotify_secret}".encode()
@@ -49,7 +47,7 @@ def spotify_get_access_token(spotify_client_id: str, spotify_secret: str):
 
         return response.json()['access_token']
 
-def spotify_query(mgr: ScreenStateManager.ScreenStateManager, spi, spotify_client_id: str, spotify_secret: str):
+def spotify_query(state, mgr, spotify_client_id: str, spotify_secret: str):
     if state.get_access_token() == "":
         print("getting new access token")
         state.set_access_token(spotify_get_access_token(spotify_client_id, spotify_secret))
