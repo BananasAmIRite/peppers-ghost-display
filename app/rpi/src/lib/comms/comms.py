@@ -36,8 +36,8 @@ CURSOR_DOWN = 0x13
 CURSOR_UP = 0x14
 
 # Screen
-SET_SCREEN = 0x20
-SET_SCREEN_NOTIF = 0x21
+SET_SCREEN = 0x21
+SET_SCREEN_NOTIF = 0x22
 
 # UART SCREEN APIs (MAY BE MOVED TO SPI)
 WEATHER = 0x30 
@@ -51,5 +51,5 @@ DEBUG_SET_IMAGE = 0xF0
 
 
 def send_message(serial, type, payload):
-    # print("sending message: ", bytearray([0x55, 0x55]) + bytearray([len(payload) + 1, type]) + payload)
+    print("sending message: ", bytearray([0x55, 0x55]) + bytearray([len(payload) + 1, type]) + payload)
     serial.write(bytearray([0x55, 0x55]) + bytearray([len(payload) + 1, type]) + payload)

@@ -1,7 +1,7 @@
 #pragma once
 #include <HardwareSerial.h>
 
-#define DEBUG
+// #define DEBUG
 
 #ifdef DEBUG
   #define LOG(x)   Serial.print(x)

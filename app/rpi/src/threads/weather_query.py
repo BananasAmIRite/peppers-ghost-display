@@ -1,6 +1,6 @@
-import src.lib.ESPSerial as ESPSerial
+import lib.comms.ESPSerial as ESPSerial
 import src.lib.weather as weather
-import src.lib.comms as comms
+import lib.comms.comms as comms
 
 
 def weather_query(ser: ESPSerial.ESPSerial, lat: float, long: float):

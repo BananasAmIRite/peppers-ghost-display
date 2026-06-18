@@ -1,5 +1,5 @@
 import tkinter as tk
-import src.lib.comms as comms
+import lib.comms.comms as comms
 import serial
 
 class App(tk.Tk):

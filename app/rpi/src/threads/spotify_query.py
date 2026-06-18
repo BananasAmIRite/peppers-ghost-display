@@ -1,6 +1,6 @@
-import src.lib.ESPSerial as ESPSerial
-from src.lib.ESPSPI import ESPSPI
-import src.lib.comms as comms
+import lib.comms.ESPSerial as ESPSerial
+from lib.comms.ESPSPI import ESPSPI
+import lib.comms.comms as comms
 import base64
 from PIL import Image
 from io import BytesIO

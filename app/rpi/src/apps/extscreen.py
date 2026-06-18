@@ -1,7 +1,7 @@
 import time
 import serial
 from pynput import mouse
-import src.lib.comms as comms
+import lib.comms.comms as comms
 from screeninfo import get_monitors
 import time
 

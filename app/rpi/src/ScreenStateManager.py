@@ -1,9 +1,14 @@
 import src.lib.PeriodicThread as PeriodicThread
 from src.threads.weather_query import weather_query
-from src.lib.ESPSerial import ESPSerial
-from src.lib.ESPSPI import ESPSPI
+from src.threads.spotify_query import spotify_query, SpotifyState
+from lib.comms.ESPSerial import ESPSerial
+from lib.comms.ESPSPI import ESPSPI
 from enum import Enum
-import lib.comms as comms
+import lib.comms.comms as comms
+from dotenv import load_dotenv
+import os
+import time
+
 
 class ScreenLayer(Enum):
     PERMANENT = 0, 
@@ -24,6 +29,8 @@ LONGITUDE = -71.0589
 
 class ScreenStateManager:
     def __init__(self, ser: ESPSerial, spi: ESPSPI):
+        load_dotenv()
+
         self.perm_screens = [ScreenType.SCREEN_IDLE, ScreenType.SCREEN_WEATHER, ScreenType.SCREEN_TASKS]
         self.temp_screens = []
         self.screen_threads = []
@@ -38,22 +45,42 @@ class ScreenStateManager:
             "idx_perm": 0, # screen idx of permanent screen
             "idx_temp": 0
         }
-
         self.cur_notif_id = -1
+
+        # screen-specific states
+        self.spotify_state = SpotifyState()
+
 
     # initialization
     def open_serial(self):
         self.ser.open()
 
     def init_threads(self):
+        
+        client_id = os.getenv("SPOTIFY_CLIENT_ID")
+        client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
         # TODO: add more threads here
         # represents update threads for each of the screens (camera update thread will be separate from this!)
-        thread_weather = PeriodicThread.PeriodicThread(60*30, weather_query, self, LATITUDE, LONGITUDE)
+        thread_weather = PeriodicThread.PeriodicThread(60*30, weather_query, self.ser, LATITUDE, LONGITUDE)
+        thread_spotify = PeriodicThread.PeriodicThread(10, spotify_query, self.spotify_state, self.ser, self.spi, client_id, client_secret)
+
         self.screen_threads.append(thread_weather)
+        self.screen_threads.append(thread_spotify)
 
     def start_threads(self):
         for t in self.screen_threads: 
             t.start()
+
+    def wait_program(self):
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            print("\nProgram terminated gracefully.")
+
+        for t in self.screen_threads: 
+            t.stop()
+            t.join()
 
     # state management
     def add_temp_screen(self, temp_screen: ScreenType):

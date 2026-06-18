@@ -99,6 +99,10 @@ class WeatherScreen : public MultipleScreen {
     private:
         WeatherState state; 
 
+        
+        std::shared_ptr<SlidingScreen> background; 
+        std::shared_ptr<WeatherOverlay> overlay; 
+
         // possible backgrounds
         std::shared_ptr<Renderable> clearScreen;  
         std::shared_ptr<Renderable> cloudyScreen;  // placeholder
@@ -107,8 +111,6 @@ class WeatherScreen : public MultipleScreen {
         std::shared_ptr<Renderable> stormScreen;  
         std::shared_ptr<Renderable> snowScreen;  // placeholder
 
-        std::shared_ptr<SlidingScreen> background; 
-        std::shared_ptr<WeatherOverlay> overlay; 
 
         void updateBackground() {
             WeatherCode code = state.currentWeatherCode; 
@@ -120,7 +122,7 @@ class WeatherScreen : public MultipleScreen {
     public: 
         WeatherScreen() : 
         MultipleScreen(), 
-        state(), 
+        state({0.0f, 0.0f, 0.0f, false, WeatherCode::Clear}), 
         background(std::make_shared<SlidingScreen>(false)), 
         overlay(std::make_shared<WeatherOverlay>(&state)),
 

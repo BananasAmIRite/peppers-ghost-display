@@ -1,7 +1,7 @@
 from PIL import Image
 import struct
-from lib.ESPSPI import ESPSPI
-import lib.comms as comms
+from lib.comms.ESPSPI import ESPSPI
+import lib.comms.comms as comms
 
 spi = ESPSPI()
 

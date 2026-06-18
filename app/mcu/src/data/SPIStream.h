@@ -6,7 +6,7 @@
 #include <cstring>
 #include <vector>
 #include "Debug.h"
-#include <ESP32DMASPISlave.h>
+// #include <ESP32DMASPISlave.h>
 
 // Abstract callback class
 class SPIStreamHandler {

@@ -1,0 +1,25 @@
+Packet received: 32
+32
+Setting screen
+2
+Packet received: 48
+48
+[AssetPool] freed slider0.bmp
+[AssetPool] freed slider1.bmp
+[AssetPool] freed sliderbtn.bmp
+[AssetPool] load /sun0.bmp -> 0
+[AssetPool] load /sun1.bmp -> 0
+[AssetPool] load /moon0.bmp -> 0
+[AssetPool] load /moon1.bmp -> 0
+[AssetPool] load /moon2.bmp -> 0
+[AssetPool] load /moon3.bmp -> 0
+[AssetPool] load /moon4.bmp -> 0
+[AssetPool] load /rain0.bmp -> 0
+[AssetPool] load /rain1.bmp -> 0
+[AssetPool] load /rain2.bmp -> 0
+[AssetPool] load /rain3.bmp -> 0
+[AssetPool] load /rainc1.bmp -> 0
+[AssetPool] load /rainc2.bmp -> 0
+[AssetPool] load /rainc3.bmp -> 0
+[AssetPool] load /rainc4.bmp -> 0
+[AssetPool] load /rainc5.bmp -> 0

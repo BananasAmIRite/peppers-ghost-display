@@ -7,8 +7,8 @@ enum PacketType {
     CURSOR_DOWN = 0x13, 
     CURSOR_UP = 0x14,
     
-    SET_SCREEN = 0x20, 
-    SET_SCREEN_NOTIF = 0x21, 
+    SET_SCREEN = 0x21, 
+    SET_SCREEN_NOTIF = 0x22, 
 
     WEATHER_SET = 0x30, 
     TASKS_ADD = 0x31, 

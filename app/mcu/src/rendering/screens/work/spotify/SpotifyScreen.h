@@ -153,7 +153,7 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
         void onSPIData(uint8_t type, uint32_t bodyLen, uint8_t* body) override {}
 
         void onUARTData(uint8_t type, uint8_t* data, uint8_t size) override {
-            Serial.println(type);
+            LOGLN(type);
             if (type == SPOTIFY_SET_SONG) {
                 if (size < 6) return; 
                 uint16_t nameSize;

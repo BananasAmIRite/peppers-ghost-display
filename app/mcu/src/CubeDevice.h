@@ -167,11 +167,13 @@ class CubeDevice : public UARTHandler, public SPIStreamHandler {
 
         
         // link handlePacket to packet comm
-        void handlePacket(uint8_t type, uint8_t* data, uint8_t len) {
+        void onUARTData(uint8_t type, uint8_t* data, uint8_t len) override {
             switch (type) {
 
                 case SET_SCREEN: 
-                    if (len < 1) return; 
+                    if (len < 1) return;
+                    // LOGLN("Setting screen");  
+                    // LOGLN(data[0]);
                     setScreen((DeviceScreen) data[0]); 
                     break;
 

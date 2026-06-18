@@ -1,10 +1,10 @@
-import src.lib.comms as comms
+import lib.comms.comms as comms
 import src.lib.weather as weather
 import serial
 import time
-import src.lib.ESPSerial as ESPSerial
+import lib.comms.ESPSerial as ESPSerial
 import src.lib.PeriodicThread as PeriodicThread
-import src.lib.ESPSPI as ESPSPI
+import lib.comms.ESPSPI as ESPSPI
 from src.threads.weather_query import weather_query 
 from src.threads.spotify_query import spotify_query, SpotifyState
 from dotenv import load_dotenv
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     thread_spotify.start()
 
     print("Sending start message...")
-#    ser.write_message(comms.DEVICE_START, bytearray())
+    ser.write_message(comms.SET_SCREEN, bytearray())
 #    ser.write_message(comms.DEVICE_WORK, bytearray())
 
 #    time.sleep(2)
@@ -53,8 +53,8 @@ if __name__ == "__main__":
     thread_spotify.join()
 
     # print("Main Thread stopped. ")
-
-
+              
+  
     out = ser.read_all()
     with open('./output.txt', 'w') as file:
         file.write(out.decode("utf-8"))

@@ -5,7 +5,7 @@ import requests
 import json
 from datetime import datetime
 
-import src.lib.comms as comms 
+import lib.comms.comms as comms 
 
 def build_weather_payload(w) -> bytearray:
     payload = bytearray()
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     print(f"  High:    {w['daily_max']:.1f} F")
     print(f"  Low:     {w['daily_min']:.1f} F")
     print(f"  Code:    {w['weather_code']}")
-    # w['weather_code'] = 3 # change weather code for testing
+    w['weather_code'] = 4 # change weather code for testing
 
     payload = build_weather_payload(w)
 
@@ -86,8 +86,16 @@ if __name__ == "__main__":
     ser.open()
     
     print("Sending message...")
-    comms.send_message(ser, comms.DEVICE_START, bytearray())
+    comms.send_message(ser, comms.SET_SCREEN, bytearray([2]))
 
     comms.send_message(ser, comms.WEATHER, payload)
 
-    comms.send_message(ser, comms.DEVICE_WORK, bytearray())
+    # comms.send_message(ser, comms.DEVICE_WORK, bytearray())
+
+    time.sleep(2)
+
+    # out = ser.read_all()
+    # with open('./output.txt', 'w') as file:
+    #     file.write(out.decode("utf-8"))
+    ser.close()
+

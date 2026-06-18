@@ -89,12 +89,21 @@ void setup() {
 
 
   tft.begin(); 
+  #define MADCTL_MY 0x80  ///< Bottom to top
+  #define MADCTL_MX 0x40  ///< Right to left
+  #define MADCTL_MV 0x20  ///< Reverse Mode
+  #define MADCTL_ML 0x10  ///< LCD refresh Bottom to top
+  #define MADCTL_RGB 0x00 ///< Red-Green-Blue pixel order
+  #define MADCTL_BGR 0x08 ///< Blue-Green-Red pixel order
+  #define MADCTL_MH 0x04  ///< LCD refresh right to left
+  uint8_t m = MADCTL_MX | MADCTL_RGB; 
+  tft.sendCommand(HX8357_MADCTL, &m, 1); 
   // tft.init(240, 320, SPI_MODE0);           // Init ST7789 320x240
   tft.setSPISpeed(40000000); 
 
   // rpispi.begin(); 
 
-  Serial.println("starting...");
+  LOGLN("starting...");
   spiReceiverPI.begin(RPI_SCK, RPI_MISO, RPI_MOSI, RPI_CS); 
 
 
