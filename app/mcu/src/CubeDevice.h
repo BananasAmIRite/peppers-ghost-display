@@ -52,6 +52,7 @@ class CubeDevice : public UARTHandler, public SPIStreamHandler {
         Screen* screenPtr; 
 
         UARTComms* packetReceiverPtr; 
+        UARTComms* packetReceiver2Ptr; 
         SPIStream* spiStreamPtr; 
 
         
@@ -84,7 +85,7 @@ class CubeDevice : public UARTHandler, public SPIStreamHandler {
 
 
     public: 
-        CubeDevice(Screen* scrnPtr, Adafruit_ImageReader* reader, UARTComms* packetReceiver, SPIStream* spiReceiver) : 
+        CubeDevice(Screen* scrnPtr, Adafruit_ImageReader* reader, UARTComms* packetReceiver, UARTComms* packetReceiver2, SPIStream* spiReceiver) : 
             screenPtr(scrnPtr), 
             // loadingScreenComposed(), 
             // idleScreenComposed(), 
@@ -96,6 +97,7 @@ class CubeDevice : public UARTHandler, public SPIStreamHandler {
             tasksScreen(), 
             spotifyScreen(), 
             packetReceiverPtr(packetReceiver), 
+            packetReceiver2Ptr(packetReceiver2), 
             spiStreamPtr(spiReceiver)
              {
 
@@ -120,6 +122,7 @@ class CubeDevice : public UARTHandler, public SPIStreamHandler {
 
                 spiStreamPtr->addHandler(&spotifyScreen); 
                 packetReceiver->addUARTHandler(&spotifyScreen); 
+                packetReceiver2->addUARTHandler(&spotifyScreen); 
         }
 
         

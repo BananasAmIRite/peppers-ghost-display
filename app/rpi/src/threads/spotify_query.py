@@ -61,7 +61,10 @@ def spotify_query(state: SpotifyState, ser: ESPSerial.ESPSerial, spi, spotify_cl
 
 
 
-    if response.status_code != 200:
+    if response.status_code == 204:
+        # TODO: implement not playing anything
+        pass
+    elif response.status_code != 200:
         # error, assume expired access token
         state.set_access_token("")
         return

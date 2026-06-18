@@ -17,8 +17,8 @@
 
 
 // Serial pins for PI comms
-// #define SER_RX1 19
-// #define SER_TX1 18
+#define SER_RX1 5
+#define SER_TX1 4
 
 // Custom SPI pins
 #define CUSTOM_SCK  39
@@ -51,7 +51,7 @@ Screen screen(&tft, 15);
 
 // packet receiver
 UARTComms packetReceiverPC(Serial); 
-// UARTComms packetReceiverPI(Serial1); 
+UARTComms packetReceiverPI(Serial1); 
 // SPITransport spiReceiverPI
       // SPI3_HOST,    // SPI Host Peripherals Select
       //   RPI_MOSI, RPI_MISO, RPI_CS, RPI_SCK, 
@@ -62,7 +62,7 @@ SPIStream spiReceiverPI(SPI3_HOST, 15, 16);
 
 
 // make device
-CubeDevice device(&screen, &reader, &packetReceiverPC, &spiReceiverPI);
+CubeDevice device(&screen, &reader, &packetReceiverPC, &packetReceiverPI, &spiReceiverPI);
 
 SdSpiConfig config(
     TFT_SD_CS,
@@ -77,7 +77,7 @@ void setup() {
 
   // Initialize Serial1 to communicate with the Raspberry Pi
   // Parameters: baud rate, protocol configuration, RX pin, TX pin
-  // Serial1.begin(115200, SERIAL_8N1, SER_RX1, SER_TX1);
+  Serial1.begin(115200, SERIAL_8N1, SER_RX1, SER_TX1);
 
   // Begin SPI with custom pinout: (SCK, MISO, MOSI, SS)
 
@@ -100,7 +100,7 @@ void setup() {
 
 
   packetReceiverPC.addUARTHandler(&device);
-  // packetReceiverPI.registerCubeDevice(&device);
+  packetReceiverPI.addUARTHandler(&device);
 
   spiReceiverPI.addHandler(&device); 
   
@@ -136,7 +136,7 @@ void loop() {
   // }
   
   packetReceiverPC.loop(); 
-  // packetReceiverPI.loop();
+  packetReceiverPI.loop();
 
   spiReceiverPI.loop(); 
 

@@ -15,6 +15,8 @@
 #define SCALE 4
 #define BUTTON_WIDTH 5
 
+#define IMG_SCALE 2
+
 #define MAX_SONGNAME_WIDTH 12
 #define SCROLL_DELAY_MS 600   // pause at each end before scrolling back
 #define SCROLL_SPEED_MS 120   // ms per character step
@@ -121,7 +123,7 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
 
             // song image
             if (curBuffer != nullptr) {
-                drawScaledRGBBitmap(*tft, *curBuffer, tft->width() / 2 - curBuffer->width() / 2, tft->height() / 3 - curBuffer->height() / 2, 1); 
+                drawScaledRGBBitmap(*tft, *curBuffer, tft->width() / 2 - curBuffer->width() * IMG_SCALE / 2, tft->height() / 3 - curBuffer->height() * IMG_SCALE / 2, IMG_SCALE); 
             }
 
             // (scrolling) text 
@@ -136,12 +138,10 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
             drawSprite(tft, 0, tft->width() / 2 - SLIDER_WIDTH * (SCALE + 1) / 2, tft->height() * 3 / 4 - SLIDER_HEIGHT * SCALE / 2, SCALE);
             drawSprite(tft, 1, tft->width() / 2 - SLIDER_WIDTH * (SCALE - 1) / 2, tft->height() * 3 / 4 - SLIDER_HEIGHT * SCALE / 2, SCALE);
 
-            int left = tft->width() / 2 - SLIDER_WIDTH * (SCALE + 1) / 2; 
-            int right = tft->width() / 2 - SLIDER_WIDTH * (SCALE - 1) / 2 + SLIDER_WIDTH * SCALE; 
 
             // slider head
-            // compute slider head pos
-
+            int left = tft->width() / 2 - SLIDER_WIDTH * (SCALE + 1) / 2; 
+            int right = tft->width() / 2 - SLIDER_WIDTH * (SCALE - 1) / 2 + SLIDER_WIDTH * SCALE; 
             uint16_t trueElapsedSecs = curSong.elapsed_seconds + (millis() - curSong.last_synchronized_millis) / 1000;
 
             float progress = constrain(((float) trueElapsedSecs) / curSong.length_seconds, 0, 1);
@@ -153,6 +153,7 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
         void onSPIData(uint8_t type, uint32_t bodyLen, uint8_t* body) override {}
 
         void onUARTData(uint8_t type, uint8_t* data, uint8_t size) override {
+            Serial.println(type);
             if (type == SPOTIFY_SET_SONG) {
                 if (size < 6) return; 
                 uint16_t nameSize;

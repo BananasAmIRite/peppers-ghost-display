@@ -38,10 +38,10 @@ class UARTComms {
         RxState state = WAIT_SYNC1;
         std::vector<UARTHandler*> uartHandlers; 
 
-        HWCDC& serial; 
+        Stream& serial; 
 
     public: 
-        UARTComms(HWCDC& ser): serial(ser) {}
+        UARTComms(Stream& ser): serial(ser) {}
 
         void loop() {
             
