@@ -64,7 +64,7 @@ enum DeviceScreen {
 class CubeDevice : public UARTHandler, public SPIStreamHandler {
     private:
         // DeviceState curState = STARTUP; 
-        DeviceScreen curScreen = STARTUP; 
+        DeviceScreen curScreen = SPOTIFY; 
         
         Screen* screenPtr; 
 
@@ -235,22 +235,26 @@ class CubeDevice : public UARTHandler, public SPIStreamHandler {
 
         void onSPIData(uint8_t type, uint32_t length, uint8_t* body) override {
             LOGLN(type); 
-            // if (type == DEBUG_SET_IMAGE) {
-            //     // if (metadataSize < 4) return; 
-            //     // uint16_t width = ((uint16_t)metadata[1] << 8) | metadata[0]; 
-            //     // uint16_t height = ((uint16_t)metadata[3] << 8) | metadata[2];
-                
-            //     LOG(type); 
+            if (type == DEBUG_SET_IMAGE) {
+                if (length < 4) return; 
 
-            //     // LOG("WIDTH: ");
-            //     // LOG(width); 
-            //     // LOG(", HEIGHT: "); 
-            //     // LOGLN(height); 
+                uint16_t width = ((uint16_t)body[1] << 8) | body[0]; 
+                uint16_t height = ((uint16_t)body[3] << 8) | body[2];
 
-            //     // spotifyScreen.loadBuffer(width, height, data, dataSize);
+                LOG("WIDTH: ");
+                LOG(width); 
+                LOG(", HEIGHT: "); 
+                LOGLN(height);
+
+                if (length < 4 + width * height * 2) return; 
+
+                LOGLN(length); 
+ 
+
+                spotifyScreen.loadBuffer(width, height, body + 4, width * height * 2);
 
 
-            // }
+            }
         }
 
 }; 

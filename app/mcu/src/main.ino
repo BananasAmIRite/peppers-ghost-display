@@ -58,7 +58,7 @@ UARTComms packetReceiverPC(Serial);
       //   4096, 
       //   4096, 
       //   4*1024*1024
-SPIStream spiReceiverPI(15, 16); 
+SPIStream spiReceiverPI(SPI3_HOST, 15, 16); 
 
 
 // make device
@@ -95,7 +95,7 @@ void setup() {
   // rpispi.begin(); 
 
   Serial.println("starting...");
-  spiReceiverPI.begin(HSPI, RPI_SCK, RPI_MISO, RPI_MOSI, RPI_CS); 
+  spiReceiverPI.begin(RPI_SCK, RPI_MISO, RPI_MOSI, RPI_CS); 
 
 
 
@@ -141,5 +141,5 @@ void loop() {
   spiReceiverPI.loop(); 
 
   device.loop(); 
-  delay(10);
+  delay(1);
 }

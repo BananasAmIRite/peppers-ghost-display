@@ -28,7 +28,7 @@ class SpotifyScreen : public Renderable {
 
         void render(Adafruit_GFX* tft) override {
 
-            drawScaledRGBBitmap(*tft, *curBuffer, 0, 0, 1); 
+            if (curBuffer != nullptr) drawScaledRGBBitmap(*tft, *curBuffer, 0, 0, 1); 
 
         }
 };
