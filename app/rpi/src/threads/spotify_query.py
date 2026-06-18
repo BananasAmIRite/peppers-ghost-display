@@ -87,12 +87,12 @@ def spotify_query(state: SpotifyState, ser: ESPSerial.ESPSerial, spi, spotify_cl
 
         if (json["item"]["id"] != state.get_last_played_id()): # new song, update image
             imgs = json["item"]["album"]["images"]
-            i_300s = [img for img in imgs if img['height'] == 300 and img['width'] == 300]
-            if len(i_300s) > 0:
-                i_300 = i_300s[0]
-                print(i_300['url'])
+            i_64s = [img for img in imgs if img['height'] == 64 and img['width'] == 64]
+            if len(i_64s) > 0:
+                i_64 = i_64s[0]
+                print(i_64['url'])
                 # get image
-                img_res = requests.get(i_300['url'])
+                img_res = requests.get(i_64['url'])
 
                 img = Image.open(BytesIO(img_res.content)).convert("RGB")
 
@@ -109,7 +109,7 @@ def spotify_query(state: SpotifyState, ser: ESPSerial.ESPSerial, spi, spotify_cl
 if __name__ == '__main__':
     load_dotenv()
     state = SpotifyState()
-    ser = ESPSerial.ESPSerial("COM8", 115200)
+    ser = ESPSerial.ESPSerial("/dev/serial0", 115200)
     spi = ESPSPI()
     ser.open()
     client_id = os.getenv("SPOTIFY_CLIENT_ID")
