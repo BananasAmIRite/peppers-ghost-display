@@ -13,7 +13,8 @@
 #include "./CubeDevice.h"
 #include "./asset/AssetPool.h"
 #include <Arduino.h>
-#include "data/SPIComms.h"
+#include "data/SPIStream.h"
+
 
 // Serial pins for PI comms
 // #define SER_RX1 19
@@ -51,13 +52,13 @@ Screen screen(&tft, 15);
 // packet receiver
 UARTComms packetReceiverPC(Serial); 
 // UARTComms packetReceiverPI(Serial1); 
-SPIComms spiReceiverPI(
-      SPI3_HOST,    // SPI Host Peripherals Select
-        RPI_MOSI, RPI_MISO, RPI_CS, RPI_SCK, 
-        4096, 
-        4096, 
-        4*1024*1024
-); 
+// SPITransport spiReceiverPI
+      // SPI3_HOST,    // SPI Host Peripherals Select
+      //   RPI_MOSI, RPI_MISO, RPI_CS, RPI_SCK, 
+      //   4096, 
+      //   4096, 
+      //   4*1024*1024
+SPIStream spiReceiverPI(SPI3_HOST, 15, 16); 
 
 
 // make device
@@ -81,7 +82,6 @@ void setup() {
   // Begin SPI with custom pinout: (SCK, MISO, MOSI, SS)
 
   spi.begin(CUSTOM_SCK, CUSTOM_MISO, CUSTOM_MOSI, CUSTOM_CS);
-  spiReceiverPI.begin(); 
 
 
   SD.begin(config);
@@ -95,6 +95,8 @@ void setup() {
   // rpispi.begin(); 
 
   Serial.println("starting...");
+  spiReceiverPI.begin(RPI_SCK, RPI_MISO, RPI_MOSI, RPI_CS); 
+
 
 
   packetReceiverPC.addUARTHandler(&device);
@@ -139,5 +141,5 @@ void loop() {
   spiReceiverPI.loop(); 
 
   device.loop(); 
-  
+  delay(1);
 }

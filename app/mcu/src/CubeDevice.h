@@ -8,7 +8,7 @@
 #include "rendering/screens/chicken/ChickenScreen.h"
 #include "rendering/screens/work/weather/WeatherScreen.h"
 #include "data/UARTComms.h"
-#include "data/SPIComms.h"
+#include "data/SPIStream.h"
 #include "rendering/screens/work/spotify/SpotifyScreen.h"
 
 
@@ -61,10 +61,10 @@ enum DeviceScreen {
 
 // representation of the device's overall state machine
 // also handles packets
-class CubeDevice : public UARTHandler, public SPIHandler {
+class CubeDevice : public UARTHandler, public SPIStreamHandler {
     private:
         // DeviceState curState = STARTUP; 
-        DeviceScreen curScreen = STARTUP; 
+        DeviceScreen curScreen = SPOTIFY; 
         
         Screen* screenPtr; 
 
@@ -233,18 +233,25 @@ class CubeDevice : public UARTHandler, public SPIHandler {
             }
         }
 
-        void onSPIData(uint8_t type, uint16_t metadataSize, uint8_t* metadata, uint32_t dataSize, uint8_t* data) {
+        void onSPIData(uint8_t type, uint32_t length, uint8_t* body) override {
+            LOGLN(type); 
             if (type == DEBUG_SET_IMAGE) {
-                if (metadataSize < 4) return; 
-                uint16_t width = ((uint16_t)metadata[1] << 8) | metadata[0]; 
-                uint16_t height = ((uint16_t)metadata[3] << 8) | metadata[2];
-                
+                if (length < 4) return; 
+
+                uint16_t width = ((uint16_t)body[1] << 8) | body[0]; 
+                uint16_t height = ((uint16_t)body[3] << 8) | body[2];
+
                 LOG("WIDTH: ");
                 LOG(width); 
                 LOG(", HEIGHT: "); 
-                LOGLN(height); 
+                LOGLN(height);
 
-                // spotifyScreen.loadBuffer(width, height, data, dataSize);
+                if (length < 4 + width * height * 2) return; 
+
+                LOGLN(length); 
+ 
+
+                spotifyScreen.loadBuffer(width, height, body + 4, width * height * 2);
 
 
             }
