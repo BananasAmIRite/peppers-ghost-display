@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../../utils/color_utils.h"
-#include "../../utils/sd_utils.h"
-#include "../Screen.h"
-#include "../../asset/AssetPool.h"
+#include "utils/color_utils.h"
+#include "utils/sd_utils.h"
+#include "rendering/Screen.h"
+#include "asset/AssetPool.h"
 #include <memory>
 #include <vector>
 #include <string>

@@ -1,12 +1,14 @@
 #pragma once
 
-#include "../../MultipleScreen.h"
-#include "../../SlidingScreen.h"
+#include "rendering/screens/MultipleScreen.h"
+#include "rendering/screens/SlidingScreen.h"
 #include "./RainScreen.h"
 #include "./SunScreen.h"
 #include "./CloudScreen.h"
-#include "../../../../fonts/tiny512pt7b.h"
-#include "../../../../utils/text_utils.h"
+#include "fonts/tiny512pt7b.h"
+#include "utils/text_utils.h"
+#include "data/UARTComms.h"
+#include "packets.h"
 #include <memory>
 #include <vector>
 #include <string>
@@ -96,7 +98,7 @@ class WeatherOverlay : public Renderable {
         }
 };
 
-class WeatherScreen : public MultipleScreen {
+class WeatherScreen : public MultipleScreen, public UARTHandler {
     private:
         WeatherState state; 
 
@@ -123,7 +125,7 @@ class WeatherScreen : public MultipleScreen {
     public: 
         WeatherScreen() : 
         MultipleScreen(), 
-        state({0.0f, 0.0f, 0.0f, false, WeatherCode::Cloudy}), 
+        state({0.0f, 0.0f, 0.0f, false, WeatherCode::Clear}), 
         background(std::make_shared<SlidingScreen>(false)), 
         overlay(std::make_shared<WeatherOverlay>(&state)),
 
@@ -166,5 +168,28 @@ class WeatherScreen : public MultipleScreen {
         void onDeactivate() override {
             background->onDeactivate(); 
             overlay->onDeactivate(); 
+        }
+
+        
+        void onUARTData(uint8_t type, uint8_t* data, uint8_t len) override {
+            
+            if (type == WEATHER_SET) {
+                // data format: float (32), float, float, uint8_t
+                if (len < 14) return;
+                // extract data and update
+                uint32_t max_raw = ((uint32_t) data[0] << 24) | ((uint32_t) data[1] << 16) | ((uint32_t) data[2] << 8) | ((uint32_t) data[3] << 0); 
+                uint32_t min_raw = ((uint32_t) data[4] << 24) | ((uint32_t) data[5] << 16) | ((uint32_t) data[6] << 8) | ((uint32_t) data[7] << 0); 
+                uint32_t current_raw = ((uint32_t) data[8] << 24) | ((uint32_t) data[9] << 16) | ((uint32_t) data[10] << 8) | ((uint32_t) data[11] << 0); 
+                float max, min, current; 
+                memcpy(&max, &max_raw, sizeof(float)); 
+                memcpy(&min, &min_raw, sizeof(float)); 
+                memcpy(&current, &current_raw, sizeof(float)); 
+                updateWeather(
+                    max, 
+                    min, 
+                    current, 
+                    data[12] & 0x01, 
+                    (WeatherCode) data[13]); 
+            }
         }
 };

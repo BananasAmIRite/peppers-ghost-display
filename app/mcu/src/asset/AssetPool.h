@@ -3,7 +3,7 @@
 #include <Adafruit_ImageReader.h>
 #include <map>
 #include <string>
-#include "../Debug.h"
+#include "Debug.h"
 
 class AssetPool {
 public:

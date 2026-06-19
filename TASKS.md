@@ -40,18 +40,25 @@
 
 ## THINGS TO DO:
 
-- (electrical) ESP32 bridge with Screen
-- Test screen refresh rate @ 15FPS
-- Write animations & state machine for MCU
-- Write background application to help fetch weather & task data
-- (electrical) Create PCB for ESP32, taking into account power, bridge to screen, bridge to Raspberry PI, heat & fan (?),
-- find a cube lol
-- (mechanical) Design case
+- [x] (electrical) ESP32 bridge with Screen
+- [x] Test screen refresh rate @ 15FPS
+- [ ] Write animations & state machine for MCU
+- [x] Write background application to help fetch weather & task data
+- [x] (electrical) Create PCB for ESP32, taking into account power, bridge to screen, bridge to Raspberry PI
+- [x] find a cube lol
+- [ ] (mechanical) Design case
 
-- Weather implementation
-    - Create screens for:
-        - Clear
-        - Cloudy
-        - Rainy (done)
-        - Snowy
-        - Stormy
+- [ ] Weather implementation
+    - [ ] Create screens for:
+        - [x] Clear
+        - [x] Cloudy
+        - [x] Rainy
+        - [ ] Snowy
+        - [x] Stormy
+
+- [x] Finalize mcu + rpi app structure
+- [ ] Create tasks screen
+- [ ] Add in temporary screen text and switching
+- [ ] Add timestamps & start/stop state to spotify screen
+- [ ] Fix current draw issues on camera
+- [ ] Create AI camera gesture recognition

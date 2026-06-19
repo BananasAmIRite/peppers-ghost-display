@@ -6,10 +6,10 @@
 #include "rendering/screens/MultipleScreen.h"
 #include "rendering/screens/LoadingScreen.h"
 #include "rendering/screens/chicken/ChickenScreen.h"
-#include "rendering/screens/work/weather/WeatherScreen.h"
+#include "rendering/screens/weather/WeatherScreen.h"
 #include "data/UARTComms.h"
 #include "data/SPIStream.h"
-#include "rendering/screens/work/spotify/SpotifyScreen.h"
+#include "rendering/screens/spotify/SpotifyScreen.h"
 #include "packets.h"
 
 
@@ -47,7 +47,7 @@ enum DeviceScreen {
 class CubeDevice : public UARTHandler, public SPIStreamHandler {
     private:
         // DeviceState curState = STARTUP; 
-        DeviceScreen curScreen = WEATHER; 
+        DeviceScreen curScreen = STARTUP; 
         
         Screen* screenPtr; 
 
@@ -120,9 +120,16 @@ class CubeDevice : public UARTHandler, public SPIStreamHandler {
                 // idleScreenComposed.addScreen(cursorScreen); 
                 // workScreenComposed.addScreen(cursorScreen); 
 
+                // uart and spi handlers
                 spiStreamPtr->addHandler(&spotifyScreen); 
                 packetReceiver->addUARTHandler(&spotifyScreen); 
                 packetReceiver2->addUARTHandler(&spotifyScreen); 
+
+                packetReceiver->addUARTHandler(&cursorScreen); 
+                packetReceiver2->addUARTHandler(&cursorScreen); 
+
+                packetReceiver->addUARTHandler(&weatherScreen); 
+                packetReceiver2->addUARTHandler(&weatherScreen); 
 
                 screenPtr->setAuxRenderer(&cursorScreen);
         }
@@ -167,8 +174,6 @@ class CubeDevice : public UARTHandler, public SPIStreamHandler {
 
                 case SET_SCREEN: 
                     if (len < 1) return;
-                    // LOGLN("Setting screen");  
-                    // LOGLN(data[0]);
                     setScreen((DeviceScreen) data[0]); 
                     break;
 
@@ -178,57 +183,17 @@ class CubeDevice : public UARTHandler, public SPIStreamHandler {
 
 
 
-                case CURSOR_SET:
-                    if (len < 4) return; 
-                    cursorScreen.getCursor()->cursorX = data[0] << 8 | data[1]; 
-                    cursorScreen.getCursor()->cursorY = data[2] << 8 | data[3]; 
-                    break;
-
-                case CURSOR_VISIBLE:
-                    if (len < 1) return; 
-                    cursorScreen.getCursor()->cursorVisible = data[0] & 0x01; 
-                    break; 
                 case CURSOR_CLICK:
                     if (cursorScreen.getCursor()->cursorVisible) screenPtr->getCurrentRenderer()->click(screenPtr->getScreen(), cursorScreen.getCursor()->cursorX, cursorScreen.getCursor()->cursorY); 
                     break; 
-                case CURSOR_DOWN: 
-                    cursorScreen.getCursor()->mouseDown = true; 
-                    break; 
-                case CURSOR_UP:
-                    cursorScreen.getCursor()->mouseDown = false; 
-                    break; 
 
-                case WEATHER_SET: {
-                    // data format: float (32), float, float, uint8_t
-                    if (len < 14) return;
-                    // extract data and update
-                    uint32_t max_raw = ((uint32_t) data[0] << 24) | ((uint32_t) data[1] << 16) | ((uint32_t) data[2] << 8) | ((uint32_t) data[3] << 0); 
-                    uint32_t min_raw = ((uint32_t) data[4] << 24) | ((uint32_t) data[5] << 16) | ((uint32_t) data[6] << 8) | ((uint32_t) data[7] << 0); 
-                    uint32_t current_raw = ((uint32_t) data[8] << 24) | ((uint32_t) data[9] << 16) | ((uint32_t) data[10] << 8) | ((uint32_t) data[11] << 0); 
-                    float max, min, current; 
-                    memcpy(&max, &max_raw, sizeof(float)); 
-                    memcpy(&min, &min_raw, sizeof(float)); 
-                    memcpy(&current, &current_raw, sizeof(float)); 
-                    weatherScreen.updateWeather(
-                        max, 
-                        min, 
-                        current, 
-                        data[12] & 0x01, 
-                        (WeatherCode) data[13]); 
-                    }
-                break; 
-                case TASKS_ADD:
-                break; 
-                case CALENDAR_ADD:
-                break;
+                default:
+                    break; 
             }
         }
 
         void onSPIData(uint8_t type, uint32_t length, uint8_t* body) override {
-            // LOGLN(type); 
-            // if (type == SPOTIFY_SET_IMAGE) {
 
-            // }
         }
 
 }; 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../../../utils/color_utils.h"
-#include "../../../../utils/sd_utils.h"
-#include "../../SpriteScreen.h"
+#include "utils/color_utils.h"
+#include "utils/sd_utils.h"
+#include "rendering/screens/SpriteScreen.h"
 #include "fonts/tiny512pt7b.h"
 #include "packets.h"
 #include <memory>

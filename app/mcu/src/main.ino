@@ -4,8 +4,8 @@
 #include "./rendering/screens/SlidingScreen.h"
 #include "./rendering/screens/SpriteScreen.h"
 #include "./rendering/screens/chicken/ChickenScreen.h"
-#include "./rendering/screens/work/weather/RainScreen.h"
-#include "./rendering/screens/work/weather/WeatherScreen.h"
+#include "./rendering/screens/weather/RainScreen.h"
+#include "./rendering/screens/weather/WeatherScreen.h"
 // #include <Adafruit_ST7789.h>
 #include <Adafruit_HX8357.h>
 #include <Adafruit_ImageReader.h>

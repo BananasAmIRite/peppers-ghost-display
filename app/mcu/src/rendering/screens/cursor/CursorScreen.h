@@ -1,9 +1,11 @@
 #pragma once
 
-#include "../../../utils/color_utils.h"
-#include "../../../utils/sd_utils.h"
-#include "../../Screen.h"
-#include "../SpriteScreen.h"
+#include "utils/color_utils.h"
+#include "utils/sd_utils.h"
+#include "rendering/Screen.h"
+#include "rendering/screens/SpriteScreen.h"
+#include "data/UARTComms.h"
+#include "packets.h"
 #include <memory>
 #include <vector>
 #include <string>
@@ -22,7 +24,7 @@ struct CursorState {
     bool mouseDown = false; 
 };
 
-class CursorScreen : public SpriteScreen {
+class CursorScreen : public SpriteScreen, public UARTHandler {
     private:
         CursorState state; 
 
@@ -55,6 +57,31 @@ class CursorScreen : public SpriteScreen {
                 // if (state->mouseDown) {
                 //     tft->fillRect(state->cursorX - CURSOR_RECT_THICKNESS / 2, state->cursorY - CURSOR_RECT_THICKNESS / 2, CURSOR_RECT_THICKNESS, CURSOR_RECT_THICKNESS, COLOR_BLACK); 
                 // }
+            }
+        }
+
+        
+        // link handlePacket to packet comm
+        void onUARTData(uint8_t type, uint8_t* data, uint8_t len) override {
+            switch (type) {
+                case CURSOR_SET:
+                    if (len < 4) return; 
+                    getCursor()->cursorX = data[0] << 8 | data[1]; 
+                    getCursor()->cursorY = data[2] << 8 | data[3]; 
+                    break;
+                case CURSOR_VISIBLE:
+                    if (len < 1) return; 
+                    getCursor()->cursorVisible = data[0] & 0x01; 
+                    break; 
+                case CURSOR_DOWN: 
+                    getCursor()->mouseDown = true; 
+                    break; 
+                case CURSOR_UP:
+                    getCursor()->mouseDown = false; 
+                    break; 
+
+                default:
+                    break;
             }
         }
 };

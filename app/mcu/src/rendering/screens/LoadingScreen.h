@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../../utils/color_utils.h"
-#include "../../utils/text_utils.h"
-#include "../Screen.h"
-#include "../../fonts/tiny518pt7b.h"
+#include "utils/color_utils.h"
+#include "utils/text_utils.h"
+#include "rendering/Screen.h"
+#include "fonts/tiny518pt7b.h"
 #include <array>
 
 #define LOADING_STRINGS_SIZE 3

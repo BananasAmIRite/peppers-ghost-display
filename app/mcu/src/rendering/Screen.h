@@ -4,7 +4,7 @@
 // #include <Adafruit_ST7789.h>
 #include <Adafruit_HX8357.h>
 #include <Adafruit_GFX.h>
-#include "../utils/color_utils.h"
+#include "utils/color_utils.h"
 
 class Renderable {
 public:

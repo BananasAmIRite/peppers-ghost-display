@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Screen.h"
+#include "rendering/Screen.h"
 #include <memory>
 #include <vector>
 

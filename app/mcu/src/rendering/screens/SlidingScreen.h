@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../utils/color_utils.h"
-#include "../Screen.h"
+#include "utils/color_utils.h"
+#include "rendering/Screen.h"
 #include <vector>
 #include <memory>
 
