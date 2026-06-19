@@ -1,11 +1,11 @@
 from PIL import Image
 
-IMAGE_WIDTH = 5
-IMAGE_HEIGHT = 5
-TOTAL_X = 1
+IMAGE_WIDTH = 32
+IMAGE_HEIGHT = 16
+TOTAL_X = 3
 TOTAL_Y = 1
-INPUT_FILE = "slider_button.png"
-OUTPUT_PREFIX = "sliderbtn"
+INPUT_FILE = "clouds.png"
+OUTPUT_PREFIX = "cloud"
 CONVERT_ALPHA = True
 
 # # Replace 'input.png' with your file path

@@ -53,22 +53,19 @@ class CloudScreen : public SpriteScreen {
         }
 
     public: 
-        CloudScreen() : SpriteScreen({
+        CloudScreen(uint16_t min_cloud_speed = 60, uint16_t max_cloud_speed = 300, uint8_t numClouds = 8, CloudBoundingBox spawn = {-200, 0, -100, 50}, CloudBoundingBox despawn = {480, 0, 600, 50}) : SpriteScreen({
             "/cloud0.bmp",
             "/cloud1.bmp",
             "/cloud2.bmp"
-        }), clouds(8) {
+        }), clouds(numClouds), minSpeed(min_cloud_speed), maxSpeed(max_cloud_speed), spawnBox(spawn), despawnBox(despawn) {
             // spawn in clouds
-            for (int i = 0; i < 8; i++) {
+            for (int i = 0; i < numClouds; i++) {
                 initRandomCloud(&clouds[i], true); 
             }
         }
 
         
         void updateClouds() {
-
-            // compute saving
-
             // update each droplet
             for (Cloud& cloud : clouds) {
                 float dx = cloud.speed / 60.0f; 

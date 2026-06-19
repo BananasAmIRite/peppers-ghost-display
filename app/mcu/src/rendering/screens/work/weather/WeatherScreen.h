@@ -4,6 +4,7 @@
 #include "../../SlidingScreen.h"
 #include "./RainScreen.h"
 #include "./SunScreen.h"
+#include "./CloudScreen.h"
 #include "../../../../fonts/tiny512pt7b.h"
 #include "../../../../utils/text_utils.h"
 #include <memory>
@@ -122,13 +123,13 @@ class WeatherScreen : public MultipleScreen {
     public: 
         WeatherScreen() : 
         MultipleScreen(), 
-        state({0.0f, 0.0f, 0.0f, false, WeatherCode::Clear}), 
+        state({0.0f, 0.0f, 0.0f, false, WeatherCode::Cloudy}), 
         background(std::make_shared<SlidingScreen>(false)), 
         overlay(std::make_shared<WeatherOverlay>(&state)),
 
         // screens
         clearScreen(std::make_shared<SunScreen>(&state.isNight)), 
-        cloudyScreen(std::make_shared<EmptyScreen>()), 
+        cloudyScreen(std::make_shared<CloudScreen>()), 
         drizzleScreen(std::make_shared<RainScreen>(300, 8, false)),
         rainScreen(std::make_shared<RainScreen>()),
         stormScreen(std::make_shared<RainScreen>(450, 64, true)), 
@@ -143,6 +144,8 @@ class WeatherScreen : public MultipleScreen {
 
             addScreen(background); 
             addScreen(overlay); 
+
+            updateBackground();
         }
 
         void updateWeather(float dailyMax, float dailyMin, float curTemp, bool isNight, WeatherCode code) {

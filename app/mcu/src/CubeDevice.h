@@ -47,7 +47,7 @@ enum DeviceScreen {
 class CubeDevice : public UARTHandler, public SPIStreamHandler {
     private:
         // DeviceState curState = STARTUP; 
-        DeviceScreen curScreen = STARTUP; 
+        DeviceScreen curScreen = WEATHER; 
         
         Screen* screenPtr; 
 
