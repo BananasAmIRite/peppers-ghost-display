@@ -63,3 +63,4 @@
 - [ ] Fix current draw issues on camera
 - [ ] Create AI camera gesture recognition
 - [ ] Create PWM screen transition animation
+- [ ] Make tasks more efficient via caching+diffing instead of sending everything

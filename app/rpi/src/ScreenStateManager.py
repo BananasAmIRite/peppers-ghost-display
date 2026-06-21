@@ -14,6 +14,7 @@ import termios
 import sys
 import select
 from screens import ScreenType
+import threading
 
 
 class ScreenLayer(Enum):
@@ -142,12 +143,25 @@ class ScreenStateManager:
         if temp_screen in self.temp_screens: return
         print("Added temp screen:" , temp_screen)
         self.temp_screens.append(temp_screen)
-        
-        # TODO: notify new temp screen
+
+    def add_temp_notif(self, temp_screen: ScreenType):
+        self.cur_notif_id = temp_screen
+        self.send_uart_message(comms.SET_SCREEN_NOTIF, bytearray([0, temp_screen.value]))
+
+        threading.Timer(5.0, self.clear_temp_notif).start() # clear notification after 5 seconds
+
+    def clear_temp_notif(self):
+        self.cur_notif_id = -1
+        self.send_uart_message(comms.SET_SCREEN_NOTIF, bytearray([1, 0]))
+
 
     def remove_temp_screen(self, temp_screen: ScreenType):
         if temp_screen not in self.temp_screens: return
         print("Removed temp screen:" , temp_screen)
+
+        # notif is active, remove it, since the screen is gone
+        if self.cur_notif_id == temp_screen:
+            self.clear_temp_notif()
 
         temp_scrn_idx = self.temp_screens.index(temp_screen)
         
@@ -178,8 +192,6 @@ class ScreenStateManager:
         # now determine screen state
         screen_id = self.perm_screens[self.cur_screen_state["idx_perm"]] if self.cur_screen_state["type"] == ScreenLayer.PERMANENT else self.temp_screens[self.cur_screen_state["idx_temp"]]
 
-
-        print(screen_id, screen_id.value)
         self.send_uart_message(comms.SET_SCREEN, bytearray([screen_id.value]))
 
     # gestures
@@ -203,7 +215,7 @@ class ScreenStateManager:
                 # swipe up to the current notificated screen and clear notification
                 self.cur_screen_state["type"] = ScreenLayer.TEMPORARY
                 self.cur_screen_state["idx_temp"] = self.temp_screens.index(self.cur_notif_id)
-                self.cur_notif_id = -1
+                self.clear_temp_notif()
             else:
                 # just swipe up
                 self.cur_screen_state["type"] = ScreenLayer.TEMPORARY
@@ -214,6 +226,7 @@ class ScreenStateManager:
             # case 1: notification
             if self.cur_notif_id != -1 and self.temp_screens.index(self.cur_notif_id) != -1:
                 self.cur_screen_state["idx_temp"] = self.temp_screens.index(self.cur_notif_id)
+                self.clear_temp_notif()
             else:
                 self.cur_screen_state["idx_temp"] += 1
         else:
