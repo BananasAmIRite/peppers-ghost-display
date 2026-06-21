@@ -9,6 +9,9 @@
 #include <vector>
 #include <string>
 #include <utility>
+#include <iostream>
+#include <iomanip>
+#include <sstream>
 
 #define SLIDER_WIDTH 32
 #define SLIDER_HEIGHT 3
@@ -16,6 +19,8 @@
 #define BUTTON_WIDTH 5
 
 #define IMG_SCALE 3
+
+#define TIMES_PADDING 10
 
 #define MAX_SONGNAME_WIDTH 12
 #define SCROLL_DELAY_MS 600   // pause at each end before scrolling back
@@ -26,6 +31,7 @@ struct SongState {
     uint16_t length_seconds; 
     uint16_t elapsed_seconds; 
     long last_synchronized_millis; 
+    bool paused; 
 };
 
 class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTHandler {
@@ -111,8 +117,9 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
             resetScroll();
         }
 
-        void updateSongState(uint16_t elapsed_seconds) {
+        void updateSongState(uint16_t elapsed_seconds, bool paused) {
             curSong.elapsed_seconds = elapsed_seconds;
+            curSong.paused = paused; 
             curSong.last_synchronized_millis = millis(); 
         }
 
@@ -142,10 +149,42 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
             // slider head
             int left = tft->width() / 2 - SLIDER_WIDTH * (SCALE + 1) / 2; 
             int right = tft->width() / 2 - SLIDER_WIDTH * (SCALE - 1) / 2 + SLIDER_WIDTH * SCALE; 
-            uint16_t trueElapsedSecs = curSong.elapsed_seconds + (millis() - curSong.last_synchronized_millis) / 1000;
+            uint16_t trueElapsedSecs = curSong.paused ? curSong.elapsed_seconds : (curSong.elapsed_seconds + (millis() - curSong.last_synchronized_millis) / 1000);
 
             float progress = constrain(((float) trueElapsedSecs) / curSong.length_seconds, 0, 1);
             drawSprite(tft, 2, left + (right - left) * progress - BUTTON_WIDTH * SCALE / 2, tft->height() * 7 / 8 - BUTTON_WIDTH * SCALE / 2, SCALE); 
+
+
+            // times
+            std::string length = seconds_to_str(curSong.length_seconds);
+            std::string elapsed = seconds_to_str(trueElapsedSecs);
+            
+            drawLeftAlignedText(tft, length.c_str(), left + (right - left) * 1 + TIMES_PADDING, tft->height() * 7 / 8); 
+            drawRightAlignedText(tft, elapsed.c_str(), left + (right - left) * 0 - TIMES_PADDING, tft->height() * 7 / 8); 
+        }
+
+        std::string seconds_to_str(uint16_t total_seconds) {
+            uint16_t hours = total_seconds / 3600;
+            uint16_t minutes = (total_seconds % 3600) / 60;
+            uint16_t seconds = total_seconds % 60;
+
+            std::ostringstream oss;
+
+            // Set up standard zero-padding formatting
+            oss << std::setfill('0');
+
+            if (hours > 0) {
+                // Output format: hh:mm:ss
+                oss << std::setw(2) << hours << ":"
+                    << std::setw(2) << minutes << ":"
+                    << std::setw(2) << seconds;
+            } else {
+                // Output format: mm:ss
+                oss << std::setw(2) << minutes << ":"
+                    << std::setw(2) << seconds;
+            }
+
+            return oss.str();
         }
 
 
@@ -179,27 +218,29 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
 
             LOGLN(type);
             if (type == SPOTIFY_SET_SONG) {
-                if (size < 6) return; 
+                if (size < 7) return; 
                 uint16_t nameSize;
                 uint16_t duration;
                 uint16_t progress;
+                bool paused = data[6] * 0x01;
 
                 memcpy(&nameSize, data, 2);
                 memcpy(&duration, data + 2, 2);
                 memcpy(&progress, data + 4, 2);
 
                 std::string songName(
-                    reinterpret_cast<char*>(data + 6),
+                    reinterpret_cast<char*>(data + 7),
                     nameSize
                 );
 
                 setSong(songName, duration); 
-                updateSongState(progress);
+                updateSongState(progress, paused); 
             } else if (type == SPOTIFY_UPDATE_SONG) {
-                if (size < 2) return; 
+                if (size < 3) return; 
                 uint16_t progress;
+                bool paused = data[2] * 0x01;
                 memcpy(&progress, data, 2);
-                updateSongState(progress); 
+                updateSongState(progress, paused); 
             }
         }
 };

@@ -72,15 +72,18 @@ class SpotifyQuery:
 
             name_bytes = name.encode("utf-8")
 
+            is_paused = not json["is_playing"]
+
 
             if (json["item"]["id"] != self.get_last_played_id()): # new song, update image
                     
                 payload = (
                     struct.pack(
-                        "<HHH",
+                        "<HHHB",
                         len(name_bytes),
                         duration,
                         progress,
+                        is_paused
                     )
                     + name_bytes
                 )
@@ -102,7 +105,7 @@ class SpotifyQuery:
                     
                     self.mgr.send_spi_message(comms.SPOTIFY_SET_IMAGE, struct.pack("<HH", width, height) + bytes(buf))
             else:
-                self.mgr.send_uart_message(comms.SPOTIFY_UPDATE_SONG, struct.pack("<H", progress))
+                self.mgr.send_uart_message(comms.SPOTIFY_UPDATE_SONG, struct.pack("<HB", progress, is_paused))
 
             
             self.set_last_id(json["item"]["id"])
