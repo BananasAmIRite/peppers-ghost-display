@@ -41,12 +41,12 @@ class SunScreen : public SpriteScreen {
 
             if (*isNight) {
                 curSunFrame = 2 + ((millis() - renderStart) / moonFrameTime) % 5; 
-                drawSprite(tft, curSunFrame, 15, 15, 4); 
+                drawSprite(tft, curSunFrame, 80+15, 15, 4); 
 
             } else {
                 curSunFrame = ((millis() - renderStart) / frameTime) % 2; 
                 
-                drawSprite(tft, curSunFrame, 0, 0, 4); 
+                drawSprite(tft, curSunFrame, 80, 0, 4); 
 
             }
 

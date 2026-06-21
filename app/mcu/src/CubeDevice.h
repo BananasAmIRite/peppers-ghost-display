@@ -48,7 +48,7 @@ enum DeviceScreen {
 class CubeDevice : public UARTHandler, public SPIStreamHandler {
     private:
         // DeviceState curState = STARTUP; 
-        DeviceScreen curScreen = TASKS; 
+        DeviceScreen curScreen = STARTUP; 
         
         Screen* screenPtr; 
 
@@ -131,6 +131,8 @@ class CubeDevice : public UARTHandler, public SPIStreamHandler {
 
                 packetReceiver->addUARTHandler(&weatherScreen); 
                 packetReceiver2->addUARTHandler(&weatherScreen); 
+
+                spiStreamPtr->addHandler(&tasksScreen); 
 
                 screenPtr->setAuxRenderer(&cursorScreen);
         }

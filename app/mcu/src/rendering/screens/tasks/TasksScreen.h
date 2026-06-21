@@ -43,10 +43,10 @@ class TasksScreen : public Renderable, public SPIStreamHandler {
         std::vector<Task> tasks; 
     public: 
         TasksScreen() : Renderable(), tasks() {
-            addTask("hang out with rachel and carlos", TaskStatus::NOT_STARTED, "a"); 
-            addTask("do holo cube project", TaskStatus::IN_PROGRESS, "b"); 
-            addTask("do motor driver tests", TaskStatus::WAITING, "c"); 
-            addTask("finish first semester", TaskStatus::DONE, "d"); 
+            // addTask("hang out with rachel and carlos", TaskStatus::NOT_STARTED, "a"); 
+            // addTask("do holo cube project", TaskStatus::IN_PROGRESS, "b"); 
+            // addTask("do motor driver tests", TaskStatus::WAITING, "c"); 
+            // addTask("finish first semester", TaskStatus::DONE, "d"); 
         }
 
         void addTask(std::string name, TaskStatus status, std::string id) {
