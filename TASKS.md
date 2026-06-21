@@ -62,3 +62,4 @@
 - [ ] Add timestamps & start/stop state to spotify screen
 - [ ] Fix current draw issues on camera
 - [ ] Create AI camera gesture recognition
+- [ ] Create PWM screen transition animation

@@ -7,6 +7,7 @@
 #include "rendering/screens/LoadingScreen.h"
 #include "rendering/screens/chicken/ChickenScreen.h"
 #include "rendering/screens/weather/WeatherScreen.h"
+#include "rendering/screens/tasks/TasksScreen.h"
 #include "data/UARTComms.h"
 #include "data/SPIStream.h"
 #include "rendering/screens/spotify/SpotifyScreen.h"
@@ -47,7 +48,7 @@ enum DeviceScreen {
 class CubeDevice : public UARTHandler, public SPIStreamHandler {
     private:
         // DeviceState curState = STARTUP; 
-        DeviceScreen curScreen = STARTUP; 
+        DeviceScreen curScreen = TASKS; 
         
         Screen* screenPtr; 
 
@@ -77,7 +78,7 @@ class CubeDevice : public UARTHandler, public SPIStreamHandler {
         // permanent screens
         ChickenScreen idleScreen; 
         WeatherScreen weatherScreen; 
-        EmptyScreen tasksScreen; 
+        TasksScreen tasksScreen; 
 
         // temporary screens
         SpotifyScreen spotifyScreen; 

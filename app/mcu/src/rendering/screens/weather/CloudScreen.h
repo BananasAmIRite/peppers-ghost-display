@@ -25,7 +25,7 @@ struct CloudBoundingBox {
     int16_t bottomright_y;
 };
 
-// haha get it? sunscreen
+
 class CloudScreen : public SpriteScreen {
     private:
         std::vector<Cloud> clouds;

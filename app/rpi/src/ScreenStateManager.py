@@ -1,6 +1,7 @@
 import lib.PeriodicThread as PeriodicThread
 from threads.weather_query import weather_query
-from threads.spotify_query import spotify_query, SpotifyState
+from threads.spotify_query import SpotifyQuery
+from threads.tasks_query import TasksQuery
 from lib.comms.ESPSerial import ESPSerial
 from lib.comms.ESPSPI import ESPSPI
 from enum import Enum
@@ -48,7 +49,17 @@ class ScreenStateManager:
         self.cur_notif_id = -1
 
         # screen-specific states
-        self.spotify_state = SpotifyState()
+
+        # spotify
+        client_id = os.getenv("SPOTIFY_CLIENT_ID")
+        client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
+
+        self.spotify_query = SpotifyQuery(self, client_id, client_secret)
+
+        # notion / tasks
+        ntn_secret = os.getenv("NOTION_CLIENT_SECRET")
+        notion_view_id = os.getenv("NOTION_VIEW_ID")
+        self.tasks_query = TasksQuery(self, ntn_secret, notion_view_id)
 
 
     # initialization
@@ -60,15 +71,15 @@ class ScreenStateManager:
 
     def init_threads(self):
         
-        client_id = os.getenv("SPOTIFY_CLIENT_ID")
-        client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
         # TODO: add more threads here
         # represents update threads for each of the screens (camera update thread will be separate from this!)
         thread_weather = PeriodicThread.PeriodicThread(60*30, weather_query, self, LATITUDE, LONGITUDE)
-        thread_spotify = PeriodicThread.PeriodicThread(10, spotify_query, self.spotify_state, self, client_id, client_secret)
+        thread_spotify = PeriodicThread.PeriodicThread(10, self.spotify_query.query)
+        thread_tasks = PeriodicThread.PeriodicThread(60, self.tasks_query.query)
 
         self.screen_threads.append(thread_weather)
         self.screen_threads.append(thread_spotify)
+        self.screen_threads.append(thread_tasks)
 
     def start_threads(self):
         for t in self.screen_threads: 

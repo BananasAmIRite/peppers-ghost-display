@@ -10,14 +10,31 @@ enum PacketType {
     SET_SCREEN = 0x21, 
     SET_SCREEN_NOTIF = 0x22, 
 
+    // WEATHER (uart)
     WEATHER_SET = 0x30, 
-    TASKS_ADD = 0x31, 
-    CALENDAR_ADD = 0x32, 
+
+
+    // TASKS (spi)
+    /*
+    Tasks Json Format: 
+    [{
+        "action": "UPDATE",
+        "name": "...", 
+        "status": 0 | 1 | 2, 
+        "id": "..."
+    }, 
+    {
+    "action": "REMOVE", 
+    "id": "..."
+    }]
+    
+    */
+    TASKS_ADD = 0x31,
 
     // SPOTIFY
-    SPOTIFY_SET_SONG = 0x40, 
-    SPOTIFY_SET_IMAGE = 0x41,
-    SPOTIFY_UPDATE_SONG = 0x42, 
+    SPOTIFY_SET_SONG = 0x40, // uart
+    SPOTIFY_SET_IMAGE = 0x41, // spi
+    SPOTIFY_UPDATE_SONG = 0x42, // uart
 
 
     // debug
