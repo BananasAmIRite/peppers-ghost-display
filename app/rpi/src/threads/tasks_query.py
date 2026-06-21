@@ -40,7 +40,7 @@ class TasksQuery:
         payload = { "page_size": 50 }
         headers = {
             "Notion-Version": "2026-03-11",
-            "Authorization": f"Bearer {secret}",
+            "Authorization": f"Bearer {self.secret}",
             "Content-Type": "application/json"
         }
 
@@ -72,7 +72,7 @@ class TasksQuery:
         url = f"https://api.notion.com/v1/pages/{page_id}"
         headers = {
             "Notion-Version": "2026-03-11",
-            "Authorization": f"Bearer {secret}",
+            "Authorization": f"Bearer {self.secret}",
             "Content-Type": "application/json"
         }
 
