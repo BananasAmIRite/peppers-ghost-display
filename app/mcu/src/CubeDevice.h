@@ -11,7 +11,8 @@
 #include "data/UARTComms.h"
 #include "data/SPIStream.h"
 #include "rendering/screens/spotify/SpotifyScreen.h"
-#include "packets.h"
+#include "types/packets.h"
+#include "types/device_screen.h"
 
 
 
@@ -30,17 +31,6 @@
 //     WORK
 // }; 
 
-enum DeviceScreen {
-    STARTUP,
-    // perm 
-    IDLE, 
-    WEATHER, 
-    TASKS,
-
-    // temp
-    SPOTIFY, 
-    MEETINGS
-};
 
 
 // representation of the device's overall state machine
@@ -180,9 +170,6 @@ class CubeDevice : public UARTHandler, public SPIStreamHandler {
                     setScreen((DeviceScreen) data[0]); 
                     break;
 
-                case SET_SCREEN_NOTIF:
-                    // TODO: implement
-                    break; 
 
 
 

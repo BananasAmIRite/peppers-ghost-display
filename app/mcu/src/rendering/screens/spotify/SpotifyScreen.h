@@ -4,7 +4,7 @@
 #include "utils/sd_utils.h"
 #include "rendering/screens/SpriteScreen.h"
 #include "fonts/tiny512pt7b.h"
-#include "packets.h"
+#include "types/packets.h"
 #include <memory>
 #include <vector>
 #include <string>

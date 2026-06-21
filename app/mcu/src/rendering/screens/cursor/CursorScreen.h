@@ -5,11 +5,14 @@
 #include "rendering/Screen.h"
 #include "rendering/screens/SpriteScreen.h"
 #include "data/UARTComms.h"
-#include "packets.h"
+#include "types/packets.h"
+#include "types/device_screen.h"
 #include <memory>
 #include <vector>
 #include <string>
 #include <utility>
+#include "fonts/tiny512pt7b.h"
+
 
 #define CURSOR_RECT_WIDTH 3*8
 #define CURSOR_RECT_THICKNESS 8
@@ -22,6 +25,10 @@ struct CursorState {
     uint16_t cursorY = 0; 
     bool cursorVisible = false; 
     bool mouseDown = false; 
+
+    // screen notifications
+    bool notifVisible = false; 
+    DeviceScreen notifScreen; 
 };
 
 class CursorScreen : public SpriteScreen, public UARTHandler {
@@ -58,6 +65,18 @@ class CursorScreen : public SpriteScreen, public UARTHandler {
                 //     tft->fillRect(state->cursorX - CURSOR_RECT_THICKNESS / 2, state->cursorY - CURSOR_RECT_THICKNESS / 2, CURSOR_RECT_THICKNESS, CURSOR_RECT_THICKNESS, COLOR_BLACK); 
                 // }
             }
+
+            if (state.notifVisible) {
+
+                tft->setFont(&Tiny5_Regular12pt7b);
+                tft->setTextColor(COLOR_WHITE);
+                tft->setTextSize(1); 
+
+                std::string text = screen_to_text(state.notifScreen) + " visible. Swipe up to see. "; 
+
+                drawCenteredText(tft, text.c_str(), tft->width() / 2, tft->height() - 20);
+            }
+
         }
 
         
@@ -80,6 +99,18 @@ class CursorScreen : public SpriteScreen, public UARTHandler {
                     getCursor()->mouseDown = false; 
                     break; 
 
+                
+                case SET_SCREEN_NOTIF: {
+                    if (len < 2) return; 
+                    bool clear = data[0] & 0x01; 
+                    if (clear) {
+                        getCursor()->notifVisible = false; 
+                    } else {
+                        getCursor()->notifVisible = true; 
+                        getCursor()->notifScreen = (DeviceScreen) data[1];
+                    }
+                    break; 
+                }
                 default:
                     break;
             }

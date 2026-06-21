@@ -57,8 +57,8 @@
         - [x] Stormy
 
 - [x] Finalize mcu + rpi app structure
-- [ ] Create tasks screen
-- [ ] Add in temporary screen text and switching
+- [x] Create tasks screen
+- [ ] Add in temporary screen text and switching (& Rename CursorScreen to OverlayScreen (since it handles more things now))
 - [ ] Add timestamps & start/stop state to spotify screen
 - [ ] Fix current draw issues on camera
 - [ ] Create AI camera gesture recognition
