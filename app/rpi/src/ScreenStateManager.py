@@ -169,7 +169,10 @@ class ScreenStateManager:
         if self.cur_screen_state["idx_temp"] == temp_scrn_idx:
             # make sure this is correct
             self.cur_screen_state["idx_temp"] -= 1
-            self.update_screen()
+
+        self.temp_screens.remove(temp_screen)
+
+        self.update_screen()
 
     def update_screen(self):
         # make sure state is valid (if not, make it valid)
