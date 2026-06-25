@@ -65,6 +65,7 @@ class SpotifyQuery:
             # update state and temp screens
             if not self.get_playing():
                 self.mgr.add_temp_screen(ScreenType.SCREEN_SPOTIFY)
+                self.mgr.add_temp_notif(ScreenType.SCREEN_SPOTIFY)
                 self.set_playing(True)
 
             json = response.json()
@@ -80,7 +81,7 @@ class SpotifyQuery:
 
 
             if (json["item"]["id"] != self.get_last_played_id()): # new song, update image
-
+                self.set_last_id(json["item"]["id"])
                 Thread(target=lambda: self.query_lyrics(json["item"]["id"], artist_name, track_name, duration), daemon=True).start()
                     
                 payload = (
@@ -114,18 +115,18 @@ class SpotifyQuery:
                 self.mgr.send_uart_message(comms.SPOTIFY_UPDATE_SONG, struct.pack("<HB", progress, is_paused))
 
             
-            self.set_last_id(json["item"]["id"])
 
     def query_lyrics(self, song_id, artist_name, track_name, duration):
-        url = f'https://lrclib.net/api/get/'
+        print("Querying lyrics")
+        url = f'https://lrclib.net/api/get'
         query_params = {
             "artist_name": artist_name, 
             "track_name": track_name, 
             "duration": duration
         }
-
         response = requests.get(url, params=query_params)
-
+        print(response.url)
+        print(response.status_code, song_id, self.get_last_played_id())
         if song_id != self.get_last_played_id():
             return
         

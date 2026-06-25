@@ -45,16 +45,20 @@ class ESPSPI:
     def wait_for_slave_high(self):
         print("Waiting for slave high...")
         print(GPIO.input(self.slave_status_pin))
-        while not GPIO.input(self.slave_status_pin):
+        cnt = 0
+        while not GPIO.input(self.slave_status_pin) and cnt < 1 / 0.0001:
             time.sleep(0.0001)
-        print("Slave high!")
+            cnt += 1
+        print("Slave high timed out" if cnt >= 1 / 0.0001 else "Slave high!")
 
     def send_packet(self, data_type: int, body: bytes) -> bool:
+        print("Queuing sending:", data_type)
         with self._lock:
+            time.sleep(0.25)
             packet = Packet(data_type, body)
             data = packet.serialize()
 
-            print(f"Sending {len(data)} bytes")
+            print(f"Sending {len(data)} bytes", data_type)
 
             GPIO.output(self.master_status_pin, GPIO.LOW)
 
@@ -69,9 +73,13 @@ class ESPSPI:
                 #     chunk += bytes(RX_SIZE - len(chunk))
 
                 print("Transferring bytes")
-                self.spi.xfer3(chunk)
+#                self.spi.xfer3(chunk)
 
                 offset += len(chunk)
+
+                if offset >= len(data):
+                    GPIO.output(self.master_status_pin, GPIO.HIGH) # output high early in case slave is too fast
+                self.spi.xfer3(chunk)
 
                 # time.sleep(0.001)
 

@@ -1,5 +1,6 @@
 import lib.comms.ESPSerial as ESPSerial
 import lib.comms.ESPSPI as ESPSPI
+import time
 from ScreenStateManager import ScreenStateManager
 
 # Configure the serial port
@@ -21,8 +22,8 @@ if __name__ == "__main__":
     print("Ready!")
 
     mgr.wait_program()
-
-    # print("Main Thread stopped. ")
+    
+    print("Main Thread stopped. ")
               
   
     out = ser.read_all()
