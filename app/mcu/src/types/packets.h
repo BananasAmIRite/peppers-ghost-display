@@ -35,6 +35,7 @@ enum PacketType {
     SPOTIFY_SET_SONG = 0x40, // uart
     SPOTIFY_SET_IMAGE = 0x41, // spi
     SPOTIFY_UPDATE_SONG = 0x42, // uart
+    SPOTIFY_SET_LYRICS = 0x43, // spi
 
 
     // debug

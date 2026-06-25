@@ -8,6 +8,8 @@ import os
 import requests
 from dotenv import load_dotenv
 from screens import ScreenType
+from threading import Thread
+from utils.lrcutils import parse_lrc
 
 class SpotifyQuery:
     def __init__(self, mgr, spotify_client_id: str, spotify_secret: str):
@@ -66,7 +68,9 @@ class SpotifyQuery:
                 self.set_playing(True)
 
             json = response.json()
-            name = ((json["item"]["artists"][0]["name"] + " - ") if len(json["item"]["artists"]) > 0 else "") + json["item"]["name"]
+            artist_name = json["item"]["artists"][0]["name"] if len(json["item"]["artists"]) > 0 else ""
+            track_name = json["item"]["name"]
+            name = ((artist_name + " - ") if len(json["item"]["artists"]) > 0 else "") + json["item"]["name"]
             duration = int(json["item"]["duration_ms"] / 1000)
             progress = int(json["progress_ms"] / 1000)
 
@@ -76,6 +80,8 @@ class SpotifyQuery:
 
 
             if (json["item"]["id"] != self.get_last_played_id()): # new song, update image
+
+                Thread(target=lambda: self.query_lyrics(json["item"]["id"], artist_name, track_name, duration), daemon=True).start()
                     
                 payload = (
                     struct.pack(
@@ -109,6 +115,32 @@ class SpotifyQuery:
 
             
             self.set_last_id(json["item"]["id"])
+
+    def query_lyrics(self, song_id, artist_name, track_name, duration):
+        url = f'https://lrclib.net/api/get/'
+        query_params = {
+            "artist_name": artist_name, 
+            "track_name": track_name, 
+            "duration": duration
+        }
+
+        response = requests.get(url, params=query_params)
+
+        if song_id != self.get_last_played_id():
+            return
+        
+        if response.status_code != 200:
+            self.mgr.send_spi_message(comms.SPOTIFY_SET_LYRICS, struct.pack("<H", 0))
+        else:
+            # parse song timesynced lyrics and send over
+            json = response.json()
+            synced_lyrics = json["syncedLyrics"]
+
+            parsed_lyrics_json = str(parse_lrc(synced_lyrics))
+
+            parsed_lyrics_bytes = parsed_lyrics_json.encode('utf-8')
+
+            self.mgr.send_spi_message(comms.SPOTIFY_SET_LYRICS, struct.pack("<H", len(parsed_lyrics_bytes)) + parsed_lyrics_bytes)
     
 
 
