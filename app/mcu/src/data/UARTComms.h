@@ -7,7 +7,7 @@
 #include <HWCDC.h>
 
 constexpr uint8_t SYNC_BYTE = 0x55;
-constexpr uint8_t MAX_PAYLOAD = 64;
+constexpr uint8_t MAX_PAYLOAD = 128;
 
 enum RxState
 {

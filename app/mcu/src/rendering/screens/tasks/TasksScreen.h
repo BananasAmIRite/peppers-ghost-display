@@ -89,8 +89,6 @@ class TasksScreen : public Renderable, public SPIStreamHandler {
         
         // handlers
         void onSPIData(uint8_t type, uint32_t size, uint8_t* data) override {
-            
-            LOGLN(type);
             if (type == TASKS_ADD) {
                 if (size < 4) return; 
 

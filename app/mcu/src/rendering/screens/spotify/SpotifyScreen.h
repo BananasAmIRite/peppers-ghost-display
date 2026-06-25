@@ -23,11 +23,12 @@
 
 #define TIMES_PADDING 10
 
-#define MAX_SONGNAME_WIDTH 12
+#define MAX_SONGNAME_WIDTH 25
 #define SCROLL_DELAY_MS 600   // pause at each end before scrolling back
 #define SCROLL_SPEED_MS 120   // ms per character step
 
-#define LYRICS_LINE_HEIGHT 20
+#define LYRICS_LINE_HEIGHT 40
+#define LYRICS_MAX_CHARS 25
 
 struct SongState {
     std::string name; 
@@ -61,7 +62,7 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
         bool scrollPaused = false;
         uint32_t pauseStart = 0;
 
-        std::vector<SongLyricLine> lyrics; 
+        std::vector<SongLyricLine> lyrics;
 
         SpotifyRenderState renderState; 
 
@@ -133,6 +134,7 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
         void setSong(std::string name, uint16_t length_seconds) {
             curSong.name = name; 
             curSong.length_seconds = length_seconds;
+            clearSongLyrics();
             resetScroll();
         }
 
@@ -143,7 +145,7 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
         }
 
         void clearSongLyrics() {
-            lyrics.clear(); 
+            lyrics.clear();
         }
 
         void addSongLyrics(std::string line, uint16_t progress) {
@@ -203,23 +205,66 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
                 return; 
             }
 
-            uint16_t elapsed = get_true_elapsed_secs();
+            float elapsed = get_true_elapsed_secs_accurate();
             // find our current lyrics pos
             int lyrics_idx = 0; // NOTE: could be -1, which means we're before the current song
             for (int i = 0; i < lyrics.size(); i++) {
-                if (lyrics.at(i).elapsed > elapsed) lyrics_idx = i-1; 
+                if (lyrics.at(i).elapsed > elapsed) {
+                    lyrics_idx = i-1; 
+                    break; 
+                }
             }
 
+            if (elapsed >= lyrics.at(lyrics.size() - 1).elapsed) lyrics_idx = lyrics.size() - 1;
+
+            tft->setFont(&Tiny5_Regular12pt7b); // i == lyrics_idx ? &Tiny5_Regular18pt7b : 
+            tft->setTextSize(1); 
+
+
             // render my lines
-            for (int i = lyrics_idx - 2; i <= lyrics_idx + 2; i++) {
+            for (int i = lyrics_idx - 1; i <= lyrics_idx + 1; i++) {
                 if (i < 0 || i >= lyrics.size()) continue; // OOB
+                
                 SongLyricLine curLyrics = lyrics.at(i);
+                std::string displayText = curLyrics.line;
 
-                tft->setFont(i == lyrics_idx ? &Tiny5_Regular18pt7b : &Tiny5_Regular12pt7b);
-                tft->setTextColor(i == lyrics_idx ? COLOR_WHITE : COLOR_GRAY);
-                tft->setTextSize(1); 
+                if (i == lyrics_idx) {
+                    // active lyric
 
-                drawCenteredText(tft, curLyrics.line.c_str(), tft->width() / 2, tft->height() * 3 / 8 + LYRICS_LINE_HEIGHT * (i - lyrics_idx)); 
+                    tft->setTextColor(COLOR_WHITE);
+
+                    if (displayText.size() > LYRICS_MAX_CHARS) {
+                        int maxOffset = displayText.size() - LYRICS_MAX_CHARS;
+
+                        int next_lyrics = lyrics_idx+1;
+                        int line_time = (next_lyrics < lyrics.size() ? (lyrics.at(next_lyrics).elapsed - curLyrics.elapsed) : curSong.length_seconds - curLyrics.elapsed) - 1;
+                        float cur_line_time = get_true_elapsed_secs_accurate() - curLyrics.elapsed; 
+                        int scrollOffset = min(((float) cur_line_time / line_time), 1.0f) * maxOffset;   
+
+                        displayText =
+                            displayText.substr(scrollOffset, LYRICS_MAX_CHARS);
+                    }
+                } else {
+                    // inactive lyric
+
+                    if (displayText.size() > LYRICS_MAX_CHARS) {
+                        displayText =
+                            displayText.substr(0, LYRICS_MAX_CHARS) + "...";
+                    }
+                    
+                    tft->setTextColor(COLOR_GRAY);
+                }
+
+                drawCenteredText(
+                    tft,
+                    displayText.c_str(),
+                    tft->width() / 2,
+                    tft->height() * 3 / 8 + LYRICS_LINE_HEIGHT * (i - lyrics_idx)
+                );
+
+
+
+                // drawCenteredText(tft, curLyrics.line.c_str(), tft->width() / 2, tft->height() * 3 / 8 + LYRICS_LINE_HEIGHT * (i - lyrics_idx)); 
             }
         }
 
@@ -248,14 +293,17 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
         }
 
         uint16_t get_true_elapsed_secs() {
-            return curSong.paused ? curSong.elapsed_seconds : (curSong.elapsed_seconds + (millis() - curSong.last_synchronized_millis) / 1000);
+            return min(curSong.paused ? curSong.elapsed_seconds : (curSong.elapsed_seconds + (millis() - curSong.last_synchronized_millis) / 1000), (unsigned long) curSong.length_seconds);
         }
+
+        float get_true_elapsed_secs_accurate() {
+            return min(curSong.paused ? curSong.elapsed_seconds : (curSong.elapsed_seconds + ((float) millis() - curSong.last_synchronized_millis) / 1000), (float) curSong.length_seconds);
+        }
+
 
 
         // handlers
         void onSPIData(uint8_t type, uint32_t size, uint8_t* data) override {
-            
-            LOGLN(type);
             if (type == SPOTIFY_SET_IMAGE) {
                 if (size < 4) return; 
 
@@ -269,7 +317,7 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
 
                 if (size < 4 + width * height * 2) return; 
 
-                LOGLN(length); 
+                // LOGLN(length); 
 
 
                 loadBuffer(width, height, data + 4, width * height * 2);
@@ -301,8 +349,6 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
         }
 
         void onUARTData(uint8_t type, uint8_t* data, uint8_t size) override {
-
-            LOGLN(type);
             if (type == SPOTIFY_SET_SONG) {
                 if (size < 7) return; 
                 uint16_t nameSize;
@@ -329,4 +375,9 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
                 updateSongState(progress, paused); 
             }
         }
+
+        void click(Adafruit_GFX* display, uint16_t x, uint16_t y) override {
+            renderState = renderState == LYRICS ? IMAGE : LYRICS; 
+        }
+
 };

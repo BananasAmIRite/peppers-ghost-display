@@ -72,9 +72,12 @@ class CursorScreen : public SpriteScreen, public UARTHandler {
                 tft->setTextColor(COLOR_WHITE);
                 tft->setTextSize(1); 
 
-                std::string text = screen_to_text(state.notifScreen) + " visible. Swipe up to see. "; 
+                std::string text = screen_to_text(state.notifScreen) + " ready. ";
+                std::string text2 = "Swipe up to see"; 
 
-                drawCenteredText(tft, text.c_str(), tft->width() / 2, tft->height() - 20);
+                drawCenteredText(tft, text.c_str(), tft->width() / 2, tft->height() - 40);
+                drawCenteredText(tft, text2.c_str(), tft->width() / 2, tft->height() - 20);
+
             }
 
         }

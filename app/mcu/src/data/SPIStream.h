@@ -187,7 +187,9 @@ class SPIStream {
                         if (psram_offset >= sizeof(packet)) { // otherwise throw away packet
                             memcpy(&packet, psram_buf, sizeof(packet)); 
                             
+                            LOG("PACKET TYPE: "); 
                             LOGLN(packet.type);
+                            LOG("PACKET SIZE: ");
                             LOGLN(packet.size); 
                             uint32_t payloadReceived = psram_offset - sizeof(packet);
                             
