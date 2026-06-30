@@ -1,7 +1,7 @@
 #pragma once
 #include <Adafruit_GFX.h>
 
-void drawCenteredText(Adafruit_GFX* display,
+inline void drawCenteredText(Adafruit_GFX* display,
                       const char* text,
                       int16_t centerX,
                       int16_t centerY)
@@ -19,7 +19,7 @@ void drawCenteredText(Adafruit_GFX* display,
 }
 
 
-void drawLeftAlignedText(Adafruit_GFX* display,
+inline void drawLeftAlignedText(Adafruit_GFX* display,
                       const char* text,
                       int16_t leftX,
                       int16_t centerY)
@@ -36,7 +36,7 @@ void drawLeftAlignedText(Adafruit_GFX* display,
     display->print(text);
 }
 
-void drawRightAlignedText(Adafruit_GFX* display,
+inline void drawRightAlignedText(Adafruit_GFX* display,
                       const char* text,
                       int16_t rightX,
                       int16_t centerY)

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 enum DeviceScreen {
     STARTUP,
     // perm 
@@ -13,7 +15,7 @@ enum DeviceScreen {
     NONE
 };
 
-std::string screen_to_text(DeviceScreen screen) {
+inline std::string screen_to_text(DeviceScreen screen) {
     switch (screen) {
         case STARTUP: 
             return "Startup"; 

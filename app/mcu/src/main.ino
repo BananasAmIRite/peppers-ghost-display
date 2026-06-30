@@ -1,16 +1,9 @@
 
-#include "./rendering/Screen.h"
-#include "./rendering/screens/LoadingScreen.h"
-#include "./rendering/screens/SlidingScreen.h"
-#include "./rendering/screens/SpriteScreen.h"
-#include "./rendering/screens/chicken/ChickenScreen.h"
-#include "./rendering/screens/weather/RainScreen.h"
-#include "./rendering/screens/weather/WeatherScreen.h"
 // #include <Adafruit_ST7789.h>
 #include <Adafruit_HX8357.h>
 #include <Adafruit_ImageReader.h>
 #include "./data/UARTComms.h"
-#include "./CubeDevice.h"
+#include "./PeppersGhostCube.h"
 #include "./asset/AssetPool.h"
 #include <Arduino.h>
 #include "data/SPIStream.h"
@@ -63,7 +56,7 @@ SPIStream spiReceiverPI(SPI3_HOST, 15, 16);
 
 
 // make device
-CubeDevice device(&screen, &reader, &packetReceiverPC, &packetReceiverPI, &spiReceiverPI);
+PeppersGhostCube device(&screen, &reader, &packetReceiverPC, &packetReceiverPI, &spiReceiverPI);
 
 SdSpiConfig config(
     TFT_SD_CS,
