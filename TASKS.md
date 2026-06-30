@@ -58,9 +58,10 @@
 
 - [x] Finalize mcu + rpi app structure
 - [x] Create tasks screen
-- [ ] Add in temporary screen text and switching (& Rename CursorScreen to OverlayScreen (since it handles more things now))
-- [ ] Add timestamps & start/stop state to spotify screen
+- [x] Add in temporary screen text and switching (& Rename CursorScreen to OverlayScreen (since it handles more things now))
+- [x] Add in lyrics!
+- [x] Add timestamps & start/stop state to spotify screen
 - [ ] Fix current draw issues on camera
 - [ ] Create AI camera gesture recognition
-- [ ] Create PWM screen transition animation
+- [x] Create PWM screen transition animation (currently jank)
 - [ ] Make tasks more efficient via caching+diffing instead of sending everything

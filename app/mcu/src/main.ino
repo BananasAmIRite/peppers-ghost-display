@@ -33,6 +33,7 @@ SPIClass spi = SPIClass(FSPI); // You can also use HSPI
 #define TFT_CS    42
 #define TFT_RST   -1
 #define TFT_SD_CS 1
+#define TFT_BLK 6
 
 #define RPI_SCK 12
 #define RPI_MOSI 11
@@ -46,7 +47,7 @@ Adafruit_HX8357 tft = Adafruit_HX8357(
 SdFat                SD;         // SD card filesystem
 Adafruit_ImageReader reader(SD); 
 
-Screen screen(&tft, 15); 
+Screen screen(&tft, 30, TFT_BLK); 
 
 
 // packet receiver
@@ -89,6 +90,7 @@ void setup() {
 
 
   tft.begin(); 
+  // taken from driver definitions (which are private)
   #define MADCTL_MY 0x80  ///< Bottom to top
   #define MADCTL_MX 0x40  ///< Right to left
   #define MADCTL_MV 0x20  ///< Reverse Mode
@@ -96,7 +98,7 @@ void setup() {
   #define MADCTL_RGB 0x00 ///< Red-Green-Blue pixel order
   #define MADCTL_BGR 0x08 ///< Blue-Green-Red pixel order
   #define MADCTL_MH 0x04  ///< LCD refresh right to left
-  uint8_t m = MADCTL_MX | MADCTL_RGB; 
+  uint8_t m = MADCTL_MX | MADCTL_RGB; // flip x + rgb
   tft.sendCommand(HX8357_MADCTL, &m, 1); 
   // tft.init(240, 320, SPI_MODE0);           // Init ST7789 320x240
   tft.setSPISpeed(40000000); 

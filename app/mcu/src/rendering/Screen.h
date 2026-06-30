@@ -29,11 +29,18 @@ class Screen {
         Renderable* auxRenderable = nullptr; 
         GFXcanvas16* buffer = nullptr;
 
+        // screen pwm
+        int pwm_pin; 
+
     public:
 
-        Screen(Adafruit_HX8357* tft_hndl, uint8_t screen_refresh_rate): tft(tft_hndl), refreshRate(screen_refresh_rate) {
+        Screen(Adafruit_HX8357* tft_hndl, uint8_t screen_refresh_rate, int pwm_pin): tft(tft_hndl), refreshRate(screen_refresh_rate), pwm_pin(pwm_pin) {
             buffer = new GFXcanvas16(tft_hndl->width(), tft_hndl->height());
             buffer->setRotation(1);
+            pinMode(pwm_pin, OUTPUT); 
+              // Set frequency to 5000 Hz (5 kHz)
+            analogWriteFrequency(pwm_pin, 5000);
+            analogWriteResolution(pwm_pin, 10); 
         }
         void tryRender();
         void update();
@@ -62,5 +69,11 @@ class Screen {
 
         void clearScreen() {
             buffer->fillScreen(COLOR_BLACK);
+        }
+
+        void setPWMOutput(int value) {
+            if (pwm_pin != -1) {
+                analogWrite(pwm_pin, value); 
+            }
         }
 };

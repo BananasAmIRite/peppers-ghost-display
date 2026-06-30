@@ -9,7 +9,8 @@ enum DeviceScreen {
 
     // temp
     SPOTIFY, 
-    MEETINGS
+    MEETINGS, 
+    NONE
 };
 
 std::string screen_to_text(DeviceScreen screen) {

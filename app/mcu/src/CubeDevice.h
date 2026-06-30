@@ -31,6 +31,13 @@
 //     WORK
 // }; 
 
+struct NextScreen {
+    DeviceScreen next; 
+    long transitionStart; 
+};
+
+#define SCREEN_TRANSITION_TIME 500
+
 
 
 // representation of the device's overall state machine
@@ -39,6 +46,7 @@ class CubeDevice : public UARTHandler, public SPIStreamHandler {
     private:
         // DeviceState curState = STARTUP; 
         DeviceScreen curScreen = STARTUP; 
+        NextScreen nextScreen = {DeviceScreen::NONE, false}; 
         
         Screen* screenPtr; 
 
@@ -78,10 +86,6 @@ class CubeDevice : public UARTHandler, public SPIStreamHandler {
     public: 
         CubeDevice(Screen* scrnPtr, Adafruit_ImageReader* reader, UARTComms* packetReceiver, UARTComms* packetReceiver2, SPIStream* spiReceiver) : 
             screenPtr(scrnPtr), 
-            // loadingScreenComposed(), 
-            // idleScreenComposed(), 
-            // workScreenComposed(), 
-            // cursorScreen(std::make_shared<CursorScreen>())
             loadingScreen(333), 
             idleScreen(), 
             weatherScreen(), 
@@ -91,25 +95,6 @@ class CubeDevice : public UARTHandler, public SPIStreamHandler {
             packetReceiver2Ptr(packetReceiver2), 
             spiStreamPtr(spiReceiver)
              {
-
-                // init screens
-                // loadingScreen = std::make_shared<LoadingScreen>(333); 
-                // idleScreen = std::make_shared<ChickenScreen>(); 
-                // work_weatherScreen = std::make_shared<WeatherScreen>();
-                // work_tasksScreen = std::make_shared<EmptyScreen>();
-
-                // workScreen = std::make_shared<SlidingScreen>(); 
-                // workScreen->addScreen(work_weatherScreen); 
-                // workScreen->addScreen(work_tasksScreen); 
-
-                // loadingScreenComposed.addScreen(loadingScreen); 
-                // idleScreenComposed.addScreen(idleScreen); 
-                // workScreenComposed.addScreen(workScreen); 
-
-                
-                // loadingScreenComposed.addScreen(cursorScreen); 
-                // idleScreenComposed.addScreen(cursorScreen); 
-                // workScreenComposed.addScreen(cursorScreen); 
 
                 // uart and spi handlers
                 spiStreamPtr->addHandler(&spotifyScreen); 
@@ -150,12 +135,34 @@ class CubeDevice : public UARTHandler, public SPIStreamHandler {
                     break;
             }
 
+            // screen transitioning
+            if (nextScreen.next != DeviceScreen::NONE) {
+                long timePassed = millis() - nextScreen.transitionStart; 
+                if (timePassed > SCREEN_TRANSITION_TIME / 2) {
+                    // if (curScreen != nextScreen.next) ledcFade(6, 1024, 0, 2000); 
+                    curScreen = nextScreen.next;
+                }
+                if (timePassed > SCREEN_TRANSITION_TIME) {
+                    // finished transition
+                    nextScreen.next = DeviceScreen::NONE; 
+                }
+                // apply pwm
+                screenPtr->setPWMOutput(1023 * (0.5f * (sin(2*PI/SCREEN_TRANSITION_TIME * timePassed) + 1)));
+            } else {
+                screenPtr->setPWMOutput(1023);
+            }
+
             
             screenPtr->tryRender(); 
         }
 
         void setScreen(DeviceScreen newScreen) {
-            curScreen = newScreen; 
+            // curScreen = newScreen; 
+            if (newScreen == curScreen) return; 
+            nextScreen.next = newScreen; 
+            nextScreen.transitionStart = millis();
+            
+            // ledcFade(6, 1024, 0, 2000);  
         }
 
 
