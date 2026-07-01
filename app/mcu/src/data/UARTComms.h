@@ -5,6 +5,7 @@
 #include <vector>
 #include "Debug.h"
 #include <HWCDC.h>
+#include <string>
 
 constexpr uint8_t SYNC_BYTE = 0x55;
 constexpr uint8_t MAX_PAYLOAD = 128;
@@ -40,14 +41,21 @@ class UARTComms {
 
         Stream& serial; 
 
+        std::string name; 
+
     public: 
-        UARTComms(Stream& ser): serial(ser) {}
+        UARTComms(std::string streamName, Stream& ser): serial(ser), name(streamName) {}
 
         void loop() {
             
             while (serial.available())
             {
-                processByte(serial.read());
+                int val = serial.read(); 
+                LOG("["); 
+                LOG(name.c_str()); 
+                LOG("] Got value: "); 
+                LOGLN(val); 
+                processByte(val);
             }
         }
 
