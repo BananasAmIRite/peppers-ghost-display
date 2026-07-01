@@ -73,10 +73,10 @@ void PeppersGhostCube::loop() {
 }
 
 void PeppersGhostCube::setScreen(DeviceScreen newScreen) {
-    // curScreen = newScreen; 
-    if (newScreen == curScreen) return; 
-    nextScreen.next = newScreen; 
-    nextScreen.transitionStart = millis();
+    curScreen = newScreen; 
+    // if (newScreen == curScreen) return; 
+    // nextScreen.next = newScreen; 
+    // nextScreen.transitionStart = millis();
     
     // ledcFade(6, 1024, 0, 2000);  
 }

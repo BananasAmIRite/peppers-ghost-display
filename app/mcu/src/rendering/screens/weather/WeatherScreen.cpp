@@ -9,7 +9,7 @@
 
 
 // weather overlay
-WeatherOverlay::WeatherOverlay(WeatherState* weatherState) {}
+WeatherOverlay::WeatherOverlay(WeatherState* weatherState) : state(weatherState) {}
 
 void WeatherOverlay::render(Adafruit_GFX* tft) {
     int16_t width = tft->width();
