@@ -37,7 +37,7 @@ class ESPSerial:
         with self._lock:
             if not self.ser.is_open:
                 raise serial.SerialException("Port is closed.")
-            print("sending message: ", bytearray([0x55, 0x55]) + bytearray([len(payload) + 1, type]) + payload)
+            print("sending message: ", type, payload)
             return self.ser.write(bytearray([0x55, 0x55]) + bytearray([len(payload) + 1, type]) + payload)
 
     def read(self, size: int = 1) -> bytes:
