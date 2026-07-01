@@ -51,33 +51,86 @@ void PeppersGhostCube::loop() {
             break;
     }
 
-    // screen transitioning
-    if (nextScreen.next != DeviceScreen::NONE) {
-        long timePassed = millis() - nextScreen.transitionStart; 
-        if (timePassed > SCREEN_TRANSITION_TIME / 2) {
-            // if (curScreen != nextScreen.next) ledcFade(6, 1024, 0, 2000); 
-            curScreen = nextScreen.next;
-        }
-        if (timePassed > SCREEN_TRANSITION_TIME) {
-            // finished transition
-            nextScreen.next = DeviceScreen::NONE; 
-        }
-        // apply pwm
-        screenPtr->setPWMOutput(1023 * (0.5f * (sin(2*PI/SCREEN_TRANSITION_TIME * timePassed) + 1)));
-    } else {
-        screenPtr->setPWMOutput(1023);
-    }
 
+
+    if (nextScreen.phase == TransitionPhase::WAITING_FOR_LOAD) {
+        screenReadyAfterLoad = true;
+    }
     
     screenPtr->tryRender(); 
+    
+}
+
+void PeppersGhostCube::updatePWMState() {
+    switch (nextScreen.phase) {
+
+        case TransitionPhase::FADING_OUT: {
+            long timePassed = millis() - nextScreen.transitionStart;
+            long half = SCREEN_TRANSITION_TIME / 2;
+
+            if (timePassed >= half) {
+                // fully black — switch the actual screen now, then wait
+                curScreen = nextScreen.next;
+                screenPtr->setPWMValue(0);
+                nextScreen.phase = TransitionPhase::WAITING_FOR_LOAD;
+            } else {
+                // fade 1023 -> 0 over [0, half]
+                float t = (float)timePassed / half;               // 0..1
+                float val = 1023 * (0.5f * (cos(PI * t) + 1));      // eases 1023 -> 0
+                screenPtr->setPWMValue((int)val);
+            }
+            break;
+        }
+
+        case TransitionPhase::WAITING_FOR_LOAD: {
+            screenPtr->setPWMValue(0);   // stay black
+            if (screenReadyAfterLoad) {
+                nextScreen.transitionStart = millis();
+                nextScreen.phase = TransitionPhase::HOLD_BLACK;   // extra buffer before fading in
+            }
+            break;
+        }
+
+        case TransitionPhase::HOLD_BLACK: {
+            screenPtr->setPWMValue(0);
+            long timePassed = millis() - nextScreen.transitionStart;
+            if (timePassed >= SCREEN_LOAD_BUFFER_MS) {   // e.g. 150-300ms, tune to taste
+                nextScreen.transitionStart = millis();
+                nextScreen.phase = TransitionPhase::FADING_IN;
+            }
+            break;
+        }
+
+        case TransitionPhase::FADING_IN: {
+            long timePassed = millis() - nextScreen.transitionStart;
+            long half = SCREEN_TRANSITION_TIME / 2;
+
+            if (timePassed >= half) {
+                screenPtr->setPWMValue(1023);
+                nextScreen.phase = TransitionPhase::NONE;
+                nextScreen.next = DeviceScreen::NONE;
+            } else {
+                float t = (float)timePassed / half;
+                float val = 1023 * (0.5f * (1 - cos(PI * t)));      // eases 0 -> 1023
+                screenPtr->setPWMValue((int)val);
+            }
+            break;
+        }
+
+        case TransitionPhase::NONE:
+        default:
+            screenPtr->setPWMValue(1023);
+            break;
+    }
 }
 
 void PeppersGhostCube::setScreen(DeviceScreen newScreen) {
-    curScreen = newScreen; 
-    // if (newScreen == curScreen) return; 
-    // nextScreen.next = newScreen; 
-    // nextScreen.transitionStart = millis();
-    
+    // curScreen = newScreen; 
+    if (newScreen == curScreen) return; 
+    nextScreen.next = newScreen; 
+    nextScreen.transitionStart = millis();
+    nextScreen.phase = TransitionPhase::FADING_OUT;
+    screenReadyAfterLoad = false;
     // ledcFade(6, 1024, 0, 2000);  
 }
 
@@ -106,3 +159,6 @@ void PeppersGhostCube::onSPIData(uint8_t type, uint32_t length, uint8_t* body) {
 
 }
 
+Screen* PeppersGhostCube::getScreen() {
+    return screenPtr; 
+}

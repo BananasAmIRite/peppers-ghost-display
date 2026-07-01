@@ -35,12 +35,22 @@
 //     WORK
 // }; 
 
+enum class TransitionPhase {
+    NONE,
+    FADING_OUT,
+    WAITING_FOR_LOAD,
+    HOLD_BLACK, 
+    FADING_IN
+};
+
 struct NextScreen {
     DeviceScreen next; 
     long transitionStart; 
+    TransitionPhase phase = TransitionPhase::NONE;
 };
 
 #define SCREEN_TRANSITION_TIME 500
+#define SCREEN_LOAD_BUFFER_MS 200
 
 
 
@@ -49,8 +59,9 @@ struct NextScreen {
 class PeppersGhostCube : public UARTHandler, public SPIStreamHandler {
     private:
         // DeviceState curState = STARTUP; 
-        DeviceScreen curScreen = STARTUP; 
-        NextScreen nextScreen = {DeviceScreen::NONE, false}; 
+        volatile DeviceScreen curScreen = STARTUP; 
+        volatile NextScreen nextScreen = {DeviceScreen::NONE, false}; 
+        volatile bool screenReadyAfterLoad = false;
         
         Screen* screenPtr; 
 
@@ -79,6 +90,8 @@ class PeppersGhostCube : public UARTHandler, public SPIStreamHandler {
         
         void loop();
 
+        void updatePWMState();
+
         void setScreen(DeviceScreen newScreen);
 
 
@@ -88,5 +101,7 @@ class PeppersGhostCube : public UARTHandler, public SPIStreamHandler {
         void onUARTData(uint8_t type, uint8_t* data, uint8_t len) override;
 
         void onSPIData(uint8_t type, uint32_t length, uint8_t* body) override;
+
+        Screen* getScreen(); 
 
 }; 

@@ -109,6 +109,16 @@ void setup() {
   spiReceiverPI.addHandler(&device); 
   
   // AssetPool::instance().acquire("/chicken0.bmp");
+
+  xTaskCreatePinnedToCore(
+    taskSetScreen, 
+    "set_screen_pwm", 
+    4096, 
+    &device, 
+    1, 
+    NULL, 
+    1
+  );
 }
 
 
@@ -132,7 +142,6 @@ void loop() {
 
     // Serial.println("Heartbeat"); 
 
-    // delay(1000);
   // if (device_suspended) {
   //   device.setState(WORK);
   // } else {
@@ -145,5 +154,16 @@ void loop() {
   spiReceiverPI.loop(); 
 
   device.loop(); 
-  delay(1);
+  vTaskDelay(pdMS_TO_TICKS(1));
+}
+
+void taskSetScreen(void* param) {
+  PeppersGhostCube* cube = static_cast<PeppersGhostCube*>(param);
+
+  for (;;) {
+    cube->updatePWMState(); 
+    cube->getScreen()->applyPWMOutput(); 
+    // screen->applyPWMOutput();
+    vTaskDelay(pdMS_TO_TICKS(20));
+  }
 }

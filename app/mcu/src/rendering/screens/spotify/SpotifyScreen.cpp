@@ -110,7 +110,7 @@ void SpotifyScreen::render(Adafruit_GFX* tft) {
     if (renderState == IMAGE) {
         // song image
         if (curBuffer != nullptr) {
-            drawScaledRGBBitmap(*tft, *curBuffer, tft->width() / 2 - curBuffer->width() * IMG_SCALE / 2, tft->height() * 3 / 8 - curBuffer->height() * IMG_SCALE / 2, IMG_SCALE); 
+            drawScaledRGBBitmap(*tft, *curBuffer, tft->width() / 2 + SCRN_OFFSET - curBuffer->width() * IMG_SCALE / 2, tft->height() * 3 / 8 - curBuffer->height() * IMG_SCALE / 2, IMG_SCALE); 
         }
     } else  {
         render_lyrics(tft);
@@ -121,17 +121,17 @@ void SpotifyScreen::render(Adafruit_GFX* tft) {
     tft->setTextColor(COLOR_WHITE);
     tft->setTextSize(1); 
 
-    drawCenteredText(tft, getVisibleName().c_str(), tft->width() / 2, tft->height() * 6 / 8); 
+    drawCenteredText(tft, getVisibleName().c_str(), tft->width() / 2 + SCRN_OFFSET, tft->height() * 6 / 8); 
 
 
     // slider
-    drawSprite(tft, 0, tft->width() / 2 - SLIDER_WIDTH * (SCALE + 1) / 2, tft->height() * 7 / 8 - SLIDER_HEIGHT * SCALE / 2, SCALE);
-    drawSprite(tft, 1, tft->width() / 2 - SLIDER_WIDTH * (SCALE - 1) / 2, tft->height() * 7 / 8 - SLIDER_HEIGHT * SCALE / 2, SCALE);
+    drawSprite(tft, 0, tft->width() / 2 + SCRN_OFFSET - SLIDER_WIDTH * (SCALE + 1) / 2, tft->height() * 7 / 8 - SLIDER_HEIGHT * SCALE / 2, SCALE);
+    drawSprite(tft, 1, tft->width() / 2 + SCRN_OFFSET - SLIDER_WIDTH * (SCALE - 1) / 2, tft->height() * 7 / 8 - SLIDER_HEIGHT * SCALE / 2, SCALE);
 
 
     // slider head
-    int left = tft->width() / 2 - SLIDER_WIDTH * (SCALE + 1) / 2; 
-    int right = tft->width() / 2 - SLIDER_WIDTH * (SCALE - 1) / 2 + SLIDER_WIDTH * SCALE; 
+    int left = tft->width() / 2 + SCRN_OFFSET - SLIDER_WIDTH * (SCALE + 1) / 2; 
+    int right = tft->width() / 2 + SCRN_OFFSET - SLIDER_WIDTH * (SCALE - 1) / 2 + SLIDER_WIDTH * SCALE; 
     uint16_t trueElapsedSecs = get_true_elapsed_secs();
 
     float progress = constrain(((float) trueElapsedSecs) / curSong.length_seconds, 0, 1);
@@ -150,7 +150,7 @@ void SpotifyScreen::render_lyrics(Adafruit_GFX* tft) {
 
     if (lyrics.size() == 0) {
         // no lyrics
-        drawCenteredText(tft, "No Lyrics...", tft->width() / 2, tft->height() * 3 / 8); 
+        drawCenteredText(tft, "No Lyrics...", tft->width() / 2 + SCRN_OFFSET, tft->height() * 3 / 8); 
         return; 
     }
 
@@ -207,13 +207,13 @@ void SpotifyScreen::render_lyrics(Adafruit_GFX* tft) {
         drawCenteredText(
             tft,
             displayText.c_str(),
-            tft->width() / 2,
+            tft->width() / 2 + SCRN_OFFSET,
             tft->height() * 3 / 8 + LYRICS_LINE_HEIGHT * (i - lyrics_idx)
         );
 
 
 
-        // drawCenteredText(tft, curLyrics.line.c_str(), tft->width() / 2, tft->height() * 3 / 8 + LYRICS_LINE_HEIGHT * (i - lyrics_idx)); 
+        // drawCenteredText(tft, curLyrics.line.c_str(), tft->width() / 2 + SCRN_OFFSET, tft->height() * 3 / 8 + LYRICS_LINE_HEIGHT * (i - lyrics_idx)); 
     }
 }
 

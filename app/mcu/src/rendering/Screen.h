@@ -6,6 +6,8 @@
 #include <Adafruit_GFX.h>
 #include "utils/color_utils.h"
 
+#define SCRN_OFFSET 15
+
 class Renderable {
 public:
     virtual void render(Adafruit_GFX* display) = 0;
@@ -31,6 +33,7 @@ class Screen {
 
         // screen pwm
         int pwm_pin; 
+        volatile int cur_pwm_value = 0;  
 
     public:
 
@@ -38,7 +41,7 @@ class Screen {
             buffer = new GFXcanvas16(tft_hndl->width(), tft_hndl->height());
             buffer->setRotation(1);
             pinMode(pwm_pin, OUTPUT); 
-              // Set frequency to 5000 Hz (5 kHz)
+            // Set frequency to 5000 Hz (5 kHz)
             analogWriteFrequency(pwm_pin, 5000);
             analogWriteResolution(pwm_pin, 10); 
         }
@@ -71,9 +74,17 @@ class Screen {
             buffer->fillScreen(COLOR_BLACK);
         }
 
-        void setPWMOutput(int value) {
+        void setPWMValue(int value) {
+            cur_pwm_value = constrain(value, 0, 1023);
+        }
+
+        int getPWMValue() const {
+            return cur_pwm_value;
+        }
+
+        void applyPWMOutput() {
             if (pwm_pin != -1) {
-                analogWrite(pwm_pin, value); 
+                analogWrite(pwm_pin, cur_pwm_value);
             }
         }
 };

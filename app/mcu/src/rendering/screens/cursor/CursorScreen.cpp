@@ -48,8 +48,8 @@ void CursorScreen::render(Adafruit_GFX* tft) {
         std::string text = screen_to_text(state.notifScreen) + " ready. ";
         std::string text2 = "Swipe up to see"; 
 
-        drawCenteredText(tft, text.c_str(), tft->width() / 2, tft->height() - 40);
-        drawCenteredText(tft, text2.c_str(), tft->width() / 2, tft->height() - 20);
+        drawCenteredText(tft, text.c_str(), tft->width() / 2 + SCRN_OFFSET, tft->height() - 40);
+        drawCenteredText(tft, text2.c_str(), tft->width() / 2 + SCRN_OFFSET, tft->height() - 20);
 
     }
 

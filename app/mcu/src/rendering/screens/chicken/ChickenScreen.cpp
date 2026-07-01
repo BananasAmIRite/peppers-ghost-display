@@ -232,7 +232,7 @@ size_t ChickenScreen::getSpriteIndex()
         drawSprite(
             tft,
             getSpriteIndex(),
-            tft->width() / 2 - SPRITE_SIZE * SPRITE_SCALE / 2 + c.x * SPRITE_POS_INC,
+            tft->width() / 2 + SCRN_OFFSET - SPRITE_SIZE * SPRITE_SCALE / 2 + c.x * SPRITE_POS_INC,
             tft->height() / 2 - SPRITE_SIZE * SPRITE_SCALE / 2 + c.y * SPRITE_POS_INC,
             SPRITE_SCALE
         );
@@ -241,7 +241,7 @@ size_t ChickenScreen::getSpriteIndex()
             size_t idx = getPetEmoteSprite(); 
             if (idx != 0) {
                 drawSprite(tft, idx, 
-                    tft->width() / 2 - SPRITE_SIZE * SPRITE_SCALE / 2 + c.x * SPRITE_POS_INC, 
+                    tft->width() / 2 + SCRN_OFFSET - SPRITE_SIZE * SPRITE_SCALE / 2 + c.x * SPRITE_POS_INC, 
                     tft->height() / 2 - 3 * SPRITE_SIZE * SPRITE_SCALE / 2 + c.y * SPRITE_POS_INC, 
                     SPRITE_SCALE
                 );
@@ -251,7 +251,7 @@ size_t ChickenScreen::getSpriteIndex()
 
 void ChickenScreen::click(Adafruit_GFX* tft, uint16_t x, uint16_t y) {
     // compute where the chicken starts and ends
-    int16_t startX = tft->width() / 2 - SPRITE_SIZE * SPRITE_SCALE / 2 + c.x * SPRITE_POS_INC; 
+    int16_t startX = tft->width() / 2 + SCRN_OFFSET - SPRITE_SIZE * SPRITE_SCALE / 2 + c.x * SPRITE_POS_INC; 
     int16_t startY = tft->height() / 2 - SPRITE_SIZE * SPRITE_SCALE / 2 + c.y * SPRITE_POS_INC; 
     int16_t endX = startX + SPRITE_SIZE * SPRITE_SCALE; 
     int16_t endY = startY + SPRITE_SIZE * SPRITE_SCALE; 
