@@ -44,8 +44,8 @@ Screen screen(&tft, 30, TFT_BLK);
 
 
 // packet receiver
-UARTComms packetReceiverPC(Serial); 
-UARTComms packetReceiverPI(Serial1); 
+UARTComms packetReceiverPC("Laptop", Serial); 
+UARTComms packetReceiverPI("RPI", Serial1); 
 // SPITransport spiReceiverPI
       // SPI3_HOST,    // SPI Host Peripherals Select
       //   RPI_MOSI, RPI_MISO, RPI_CS, RPI_SCK, 
