@@ -1,5 +1,6 @@
 from picamera2 import Picamera2
 from picamera2.devices import IMX500
+from libcamera import Transform
 import numpy as np
 import cv2
 import time
@@ -16,7 +17,8 @@ picam2 = Picamera2()
 #)
 
 #picam2.configure(config)
-picam2.start()
+preview_config = picam2.create_preview_configuration(transform=Transform(hflip=True, vflip=True))
+picam2.start(preview_config)
 
 print("Running IMX500 pose + imshow... Ctrl+C to stop")
 
