@@ -3,6 +3,7 @@ from threads.weather_query import weather_query
 from threads.spotify_query import SpotifyQuery
 from threads.tasks_query import TasksQuery
 from threads.serial_loop import UARTComms
+from threads.calendar_query import CalendarQuery, get_service as get_calendar_service
 from lib.comms.ESPSerial import ESPSerial
 from lib.comms.ESPSPI import ESPSPI
 from enum import Enum
@@ -34,7 +35,7 @@ class ScreenStateManager:
     def __init__(self, ser: ESPSerial, spi: ESPSPI):
         load_dotenv()
 
-        self.perm_screens = [ScreenType.SCREEN_IDLE, ScreenType.SCREEN_WEATHER, ScreenType.SCREEN_TASKS]
+        self.perm_screens = [ScreenType.SCREEN_IDLE, ScreenType.SCREEN_WEATHER, ScreenType.SCREEN_CALENDAR, ScreenType.SCREEN_TASKS]
         self.temp_screens = []
         self.screen_threads = []
         # uart to esp Serial1
@@ -55,13 +56,15 @@ class ScreenStateManager:
         # spotify
         client_id = os.getenv("SPOTIFY_CLIENT_ID")
         client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
-
         self.spotify_query = SpotifyQuery(self, client_id, client_secret)
 
         # notion / tasks
         ntn_secret = os.getenv("NOTION_CLIENT_SECRET")
         notion_view_id = os.getenv("NOTION_VIEW_ID")
         self.tasks_query = TasksQuery(self, ntn_secret, notion_view_id)
+
+        # calendar
+        self.calendar_query = CalendarQuery(self, get_calendar_service(), os.getenv("CALENDAR_IDS").split(","))
 
 
         # async serial read
@@ -83,11 +86,13 @@ class ScreenStateManager:
         thread_weather = PeriodicThread.PeriodicThread(60*30, weather_query, self, LATITUDE, LONGITUDE)
         thread_spotify = PeriodicThread.PeriodicThread(10, self.spotify_query.query)
         thread_tasks = PeriodicThread.PeriodicThread(60*5, self.tasks_query.query)
+        thread_calendar = PeriodicThread.PeriodicThread(60, self.calendar_query.query)
 
 
         self.screen_threads.append(thread_weather)
         self.screen_threads.append(thread_spotify)
         self.screen_threads.append(thread_tasks)
+        self.screen_threads.append(thread_calendar)
 
         thread_serialread = PeriodicThread.PeriodicThread(0.1, self.uart_comms.loop)
         self.screen_threads.append(thread_serialread)
@@ -97,15 +102,6 @@ class ScreenStateManager:
             t.start()
 
     def wait_program(self):
-        # try:
-        #     while True:
-        #         time.sleep(1)
-        # except KeyboardInterrupt:
-        #     print("\nProgram terminated gracefully.")
-
-        # for t in self.screen_threads: 
-        #     t.stop()
-        #     t.join()
         print("\nControl device screens using WASD keys (Ctrl+C to exit):")
         print("  W -> Swipe Up    |  A -> Swipe Left")
         print("  S -> Swipe Down  |  D -> Swipe Right\n")

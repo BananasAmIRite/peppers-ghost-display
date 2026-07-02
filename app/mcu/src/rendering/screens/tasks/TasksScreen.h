@@ -4,14 +4,12 @@
 #include "utils/sd_utils.h"
 #include "utils/ScrollingText.h"
 #include "rendering/screens/SpriteScreen.h"
-#include "fonts/tiny512pt7b.h"
 #include "data/SPIStream.h"
 #include "types/packets.h"
 #include <memory>
 #include <vector>
 #include <string>
 #include <utility>
-#include <ArduinoJson.h>
 
 
 enum TaskStatus {

@@ -1,7 +1,7 @@
 from enum import Enum, auto
 from typing import Callable, List
 
-from lib.comms.ESPSerial import ESPSerial  # adjust import to wherever ESPSerial lives
+from lib.comms.ESPSerial import ESPSerial  
 
 
 SYNC_BYTE = 0x55

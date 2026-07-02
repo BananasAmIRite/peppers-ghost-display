@@ -17,6 +17,7 @@
 #include "rendering/screens/chicken/ChickenScreen.h"
 #include "rendering/screens/weather/WeatherScreen.h"
 #include "rendering/screens/tasks/TasksScreen.h"
+#include "rendering/screens/calendar/CalendarScreen.h"
 #include "rendering/screens/spotify/SpotifyScreen.h"
 
 
@@ -60,7 +61,7 @@ struct NextScreen {
 class PeppersGhostCube : public UARTHandler, public SPIStreamHandler {
     private:
         // DeviceState curState = STARTUP; 
-        volatile DeviceScreen curScreen = STARTUP; 
+        volatile DeviceScreen curScreen = CALENDAR; 
         volatile NextScreen nextScreen = {DeviceScreen::NONE, false}; 
         volatile bool screenReadyAfterLoad = false;
         
@@ -79,6 +80,7 @@ class PeppersGhostCube : public UARTHandler, public SPIStreamHandler {
         ChickenScreen idleScreen; 
         WeatherScreen weatherScreen; 
         TasksScreen tasksScreen; 
+        CalendarScreen calScreen; 
 
         // temporary screens
         SpotifyScreen spotifyScreen; 

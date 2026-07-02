@@ -1,8 +1,12 @@
 import time
+import threading
 import serial
 from pynput import mouse, keyboard
 import lib.comms.comms as comms
 from screeninfo import get_monitors
+
+import pystray
+from PIL import Image, ImageDraw
 
 
 CUBE_W = 480
@@ -26,6 +30,11 @@ class CubeBridge:
 
         self.mouse_listener = None
         self.keyboard_listener = None
+
+        # Start enabled by default
+        self.enabled = True
+
+        self.tray_icon = None
 
     # ----------------------------
     # Find virtual display
@@ -71,6 +80,9 @@ class CubeBridge:
     # Mouse move
     # ----------------------------
     def on_move(self, x, y):
+        if not self.enabled:
+            return
+
         m = self.cube_monitor
 
         inside = (
@@ -115,6 +127,9 @@ class CubeBridge:
     # Mouse button press
     # ----------------------------
     def on_click(self, x, y, button, pressed):
+        if not self.enabled:
+            return
+
         if not self.inside:
             return
 
@@ -128,6 +143,9 @@ class CubeBridge:
     # Swipe (only valid while mouse is over the cube screen)
     # ----------------------------
     def swipe(self, direction: int, label: str):
+        if not self.enabled:
+            return
+
         if not self.inside:
             return
 
@@ -142,6 +160,9 @@ class CubeBridge:
     # Keyboard press (global, works regardless of window focus)
     # ----------------------------
     def on_key_press(self, key):
+        if not self.enabled:
+            return
+
         try:
             char = key.char.lower()
         except AttributeError:
@@ -156,6 +177,61 @@ class CubeBridge:
             self.swipe(0x02, "Up")
         elif char == 's':
             self.swipe(0x03, "Down")
+
+    # ----------------------------
+    # Enable / Disable
+    # ----------------------------
+    def set_enabled(self, value: bool):
+        self.enabled = value
+
+        if not self.enabled:
+            # Make sure we cleanly leave the cube state (hides cursor, etc.)
+            self.exit_cube()
+
+        print(f"Cube bridge {'enabled' if self.enabled else 'disabled'}")
+
+        if self.tray_icon is not None:
+            self.tray_icon.update_menu()
+            self.tray_icon.icon = self._make_tray_image(self.enabled)
+
+    # ----------------------------
+    # Tray icon
+    # ----------------------------
+    def _make_tray_image(self, enabled: bool):
+        size = 64
+        color = (40, 200, 90) if enabled else (200, 60, 60)
+
+        image = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(image)
+        margin = 8
+        draw.ellipse(
+            [margin, margin, size - margin, size - margin],
+            fill=color
+        )
+        return image
+
+    def _toggle_enabled(self, icon, item):
+        self.set_enabled(not self.enabled)
+
+    def _on_exit(self, icon, item):
+        self.stop()
+        icon.stop()
+
+    def _build_tray_icon(self):
+        menu = pystray.Menu(
+            pystray.MenuItem(
+                lambda item: "Disable" if self.enabled else "Enable",
+                self._toggle_enabled
+            ),
+            pystray.MenuItem("Exit", self._on_exit)
+        )
+
+        self.tray_icon = pystray.Icon(
+            "cube_bridge",
+            icon=self._make_tray_image(self.enabled),
+            title="Cube Bridge",
+            menu=menu
+        )
 
     # ----------------------------
     # Start listeners
@@ -185,11 +261,14 @@ class CubeBridge:
 
     def run(self):
         self.start()
+        self._build_tray_icon()
         try:
-            # block main thread until Ctrl+C, while listeners run in background
-            self.keyboard_listener.join()
+            # tray icon owns the main thread; listeners run in background
+            self.tray_icon.run()
         except KeyboardInterrupt:
             print("\nProgram terminated gracefully.")
+        finally:
+            self.stop()
 
 
 # ----------------------------

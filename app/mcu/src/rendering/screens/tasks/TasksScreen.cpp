@@ -1,5 +1,8 @@
 #include "TasksScreen.h"
 
+#include "fonts/tiny512pt7b.h"
+#include "fonts/tiny518pt7b.h"
+#include <ArduinoJson.h>
 
 TasksScreen::TasksScreen() : Renderable(), tasks() {
 }
@@ -9,8 +12,8 @@ void TasksScreen::addTask(std::string name, TaskStatus status, std::string id) {
 }
 
 void TasksScreen::render(Adafruit_GFX* tft) {
-    const int marginX = 100;
-    const int startY = 40;
+    const int marginX = 110;
+    const int startY = 50;
 
     const int circleRadius = 4;
     const int circleX = marginX + circleRadius;
@@ -18,8 +21,15 @@ void TasksScreen::render(Adafruit_GFX* tft) {
     const int textX = circleX + circleRadius + 6;
     const int lineHeight = 25;
 
+    const int titleLineHeight = 40;
+
     tft->setTextSize(1);
     tft->setTextColor(COLOR_WHITE);
+    tft->setFont(&Tiny5_Regular18pt7b);
+
+    tft->setCursor(marginX, startY); 
+    tft->print("My Tasks");
+
     tft->setFont(&Tiny5_Regular12pt7b);
 
     for (size_t i = 0; i < tasks.size(); i++) {
@@ -27,7 +37,7 @@ void TasksScreen::render(Adafruit_GFX* tft) {
 
         task.name.update();
 
-        int y = startY + i * lineHeight;
+        int y = startY + i * lineHeight + titleLineHeight;
 
         uint16_t color;
         switch (task.status) {

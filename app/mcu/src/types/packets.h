@@ -40,6 +40,10 @@ enum PacketType {
     // PI Bypass Commands
     PI_SWIPE = 0x50, // 0x50 [swipe_direction]
 
+    // Calendar
+    CAL_SET_DATE_TIME = 0x60, // [uint64 timestamp] [uint32 offset]
+    CAL_SET_EVENTS = 0x61, // {name: string, timestamp: number}
+
 
     // debug
     DEBUG_SET_IMAGE = 0xF0

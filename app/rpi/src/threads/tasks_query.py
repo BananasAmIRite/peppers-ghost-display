@@ -64,8 +64,6 @@ class TasksQuery:
                 + spi_payload_bytes
             )
 
-            print(payload)
-
             self.mgr.send_spi_message(comms.TASKS_ADD, payload)
         
     def query_page(self, page_id):

@@ -7,6 +7,7 @@ PeppersGhostCube::PeppersGhostCube(Screen* scrnPtr, Adafruit_ImageReader* reader
     weatherScreen(), 
     tasksScreen(), 
     spotifyScreen(), 
+    calScreen(),
     packetReceiverPtr(packetReceiver), 
     packetReceiver2Ptr(packetReceiver2), 
     spiStreamPtr(spiReceiver)
@@ -24,6 +25,10 @@ PeppersGhostCube::PeppersGhostCube(Screen* scrnPtr, Adafruit_ImageReader* reader
         packetReceiver2->addUARTHandler(&weatherScreen); 
 
         spiStreamPtr->addHandler(&tasksScreen); 
+
+        packetReceiver->addUARTHandler(&calScreen); 
+        packetReceiver2->addUARTHandler(&calScreen);
+        spiStreamPtr->addHandler(&calScreen); 
 
         screenPtr->setAuxRenderer(&cursorScreen);
 }
@@ -46,6 +51,9 @@ void PeppersGhostCube::loop() {
         case TASKS: 
             screenPtr->setRenderer(&tasksScreen); 
             break; 
+        case CALENDAR:
+            screenPtr->setRenderer(&calScreen);
+            break;
         case SPOTIFY: 
             screenPtr->setRenderer(&spotifyScreen); 
             break;

@@ -8,6 +8,7 @@ enum DeviceScreen {
     IDLE, 
     WEATHER, 
     TASKS,
+    CALENDAR, 
 
     // temp
     SPOTIFY, 
