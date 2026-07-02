@@ -20,7 +20,7 @@ void WeatherOverlay::render(Adafruit_GFX* tft) {
     tft->setTextSize(1); 
 
     if (!state) {
-        drawCenteredText(tft, "No Weather Data", width / 2, height / 2);
+        drawCenteredText(tft, "No Weather Data", width / 2 + SCRN_OFFSET, height / 2);
         return;
     }
 
@@ -29,14 +29,14 @@ void WeatherOverlay::render(Adafruit_GFX* tft) {
     // Line 1: current temperature
     snprintf(buffer, sizeof(buffer),
             "Now: %.1f F", state->currentTemp);
-    drawCenteredText(tft, buffer, width / 2, height / 2 - 20);
+    drawCenteredText(tft, buffer, width / 2 + SCRN_OFFSET, height / 2 - 20);
 
     // Line 2: high / low
     snprintf(buffer, sizeof(buffer),
             "H: %.1f F    L: %.1f F",
             state->dailyMax,
             state->dailyMin);
-    drawCenteredText(tft, buffer, width / 2, height / 2 + 10);
+    drawCenteredText(tft, buffer, width / 2 + SCRN_OFFSET, height / 2 + 10);
 
     // Optional Line 3: weather code
     const char* weatherStr = "Unknown";

@@ -66,3 +66,11 @@ class ESPSerial:
             if self.ser.is_open:
                 self.ser.reset_input_buffer()
                 self.ser.reset_output_buffer()
+
+    @property
+    def in_waiting(self) -> int:
+        """Number of bytes currently in the input buffer, thread-safe."""
+        with self._lock:
+            if not self.ser.is_open:
+                raise serial.SerialException("Port is closed.")
+            return self.ser.in_waiting

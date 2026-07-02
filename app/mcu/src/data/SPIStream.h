@@ -54,7 +54,8 @@ class SPIStream {
 
     public:
         SPIStream(spi_host_device_t spi_bus, int slaveStatus, int masterStatus) : bus(spi_bus), slaveStatusPin(slaveStatus), masterStatusPin(masterStatus), handlers() {
-
+            // RPI 24 - MASTER - 17
+            // RPI 25 - SLAVE - 15
         }
 
         ~SPIStream() {

@@ -52,7 +52,7 @@ UARTComms packetReceiverPI("RPI", Serial1);
       //   4096, 
       //   4096, 
       //   4*1024*1024
-SPIStream spiReceiverPI(SPI3_HOST, 15, 16); 
+SPIStream spiReceiverPI(SPI3_HOST, 15, 17); 
 
 
 // make device

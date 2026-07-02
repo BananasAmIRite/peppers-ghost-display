@@ -153,6 +153,13 @@ void PeppersGhostCube::onUARTData(uint8_t type, uint8_t* data, uint8_t len) {
         default:
             break; 
     }
+
+    
+    Serial1.write(0x55);
+    Serial1.write(0x55);
+    Serial1.write(0x01);
+    Serial1.write(0x32);
+    Serial1.write(0xFF);
 }
 
 void PeppersGhostCube::onSPIData(uint8_t type, uint32_t length, uint8_t* body) {

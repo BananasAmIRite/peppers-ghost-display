@@ -2,6 +2,7 @@ import lib.PeriodicThread as PeriodicThread
 from threads.weather_query import weather_query
 from threads.spotify_query import SpotifyQuery
 from threads.tasks_query import TasksQuery
+from threads.serial_loop import UARTComms
 from lib.comms.ESPSerial import ESPSerial
 from lib.comms.ESPSPI import ESPSPI
 from enum import Enum
@@ -63,6 +64,11 @@ class ScreenStateManager:
         self.tasks_query = TasksQuery(self, ntn_secret, notion_view_id)
 
 
+        # async serial read
+        self.uart_comms = UARTComms("ESP UART", ser)
+        self.uart_comms.add_uart_handler(lambda type, data, len: print("got uart", type, len, data))
+
+
     # initialization
     def init(self):
         self.ser.open()
@@ -78,9 +84,13 @@ class ScreenStateManager:
         thread_spotify = PeriodicThread.PeriodicThread(10, self.spotify_query.query)
         thread_tasks = PeriodicThread.PeriodicThread(60*5, self.tasks_query.query)
 
+
         self.screen_threads.append(thread_weather)
         self.screen_threads.append(thread_spotify)
         self.screen_threads.append(thread_tasks)
+
+        thread_serialread = PeriodicThread.PeriodicThread(0.1, self.uart_comms.loop)
+        self.screen_threads.append(thread_serialread)
 
     def start_threads(self):
         for t in self.screen_threads: 
