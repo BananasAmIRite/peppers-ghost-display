@@ -66,7 +66,7 @@ class ScreenStateManager:
 
         # async serial read
         self.uart_comms = UARTComms("ESP UART", ser)
-        self.uart_comms.add_uart_handler(lambda type, data, len: print("got uart", type, len, data))
+        self.uart_comms.add_uart_handler(self.uart_handler)
 
 
     # initialization
