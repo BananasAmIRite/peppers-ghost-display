@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <TimeLib.h>
 
 std::string dayOfWeekToShortString(int dayIndex) {
   switch (dayIndex) {
@@ -89,4 +90,8 @@ std::string timeTo12hStringNoSeconds(int h, int m) {
   timeStr += std::to_string(m) + period;
   
   return timeStr; // Returns "02:30 PM"
+}
+
+std::string formatTimeFromTimestamp(time_t timestamp) {
+    return timeTo12hStringNoSeconds(hour(timestamp), minute(timestamp)); 
 }

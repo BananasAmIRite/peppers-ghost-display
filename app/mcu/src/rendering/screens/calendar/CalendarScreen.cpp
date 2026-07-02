@@ -4,6 +4,7 @@
 #include "fonts/tiny512pt7b.h"
 #include "fonts/tiny518pt7b.h"
 #include "utils/datetime_utils.h"
+#include "utils/text_utils.h"
 #include "types/packets.h"
 #include <ArduinoJson.h>
 
@@ -17,7 +18,7 @@ void CalendarScreen::render(Adafruit_GFX* tft) {
     // render date and time
 
     const int startX = 110; 
-    const int startY = 75; 
+    const int startY = 50; 
 
     const int textMargin = 20; 
 
@@ -62,20 +63,31 @@ void CalendarScreen::render(Adafruit_GFX* tft) {
     tft->setFont(&Tiny5_Regular12pt7b);
 
     // Draw current and upcoming events
-    std::vector<CalendarEvent> currentEvents = getCurrentEvents();
-    std::vector<CalendarEvent> upcomingEvents = getNextEvents();
 
+    // first, update all texts in the current and upcoming events
+    for (auto& s : currentEvents) s.name.update(); 
+    for (auto& s : upcomingEvents) s.name.update(); 
+
+
+    // then start drawing
     int y = timeStartY + textMargin * 3;
 
     // ---------- Current events ----------
     if (!currentEvents.empty()) {
         tft->setCursor(startX, y);
         tft->print("Now: ");
+        y += textMargin;
 
         for (size_t i = 0; i < currentEvents.size(); i++) {
-            if (i != 0)
-                tft->print(", ");
-            tft->print(currentEvents[i].name.c_str());
+            tft->setCursor(startX + 10, y);
+            // tft->print("- ");
+            tft->print(currentEvents[i].name.getVisibleText().c_str());
+            drawRightAlignedText(tft, 
+                ("Til " + formatTimeFromTimestamp(timestampToLocal(currentEvents[i].timestampEnd))).c_str(), 
+                410, y - textMargin / 2
+            ); 
+            
+            y += textMargin;
         }
 
         y += textMargin;
@@ -89,38 +101,41 @@ void CalendarScreen::render(Adafruit_GFX* tft) {
 
         for (const auto& event : upcomingEvents) {
             tft->setCursor(startX + 10, y);
-            tft->print("- ");
-            tft->println(event.name.c_str());
+            // tft->print("- ");
+            tft->println(event.name.getVisibleText().c_str());
+            drawRightAlignedText(tft, 
+                (formatTimeFromTimestamp(timestampToLocal(event.timestampStart))).c_str(), 
+                410, y - textMargin / 2
+            ); 
             y += textMargin;
         }
     }
-
-
 }
 
-std::vector<CalendarEvent> CalendarScreen::getCurrentEvents() {
-    std::vector<CalendarEvent> current;
+std::vector<RunningCalendarEvent> CalendarScreen::getCurrentEvents() {
+    std::vector<RunningCalendarEvent> current;
 
     time_t now = computeCurTimestamp();
 
     for (const auto& event : events) {
         if (event.timestampStart <= now && now < event.timestampEnd) {
-            current.push_back(event);
+            current.push_back({event.name, event.timestampStart, event.timestampEnd, 11});
         }
     }
 
     return current;
 }
 
-std::vector<CalendarEvent> CalendarScreen::getNextEvents(size_t count) {
-    std::vector<CalendarEvent> upcoming;
+std::vector<RunningCalendarEvent> CalendarScreen::getNextEvents(size_t count) {
+    std::vector<RunningCalendarEvent> upcoming;
 
     time_t now = computeCurTimestamp();
 
     // Assumes events are sorted by start time.
     for (const auto& event : events) {
         if (event.timestampStart > now) {
-            upcoming.push_back(event);
+            if ((event.timestampStart - now) > 60 * 60 * 24) continue; 
+            upcoming.push_back({event.name, event.timestampStart, event.timestampEnd, 14});
 
             if (upcoming.size() >= count)
                 break;
@@ -176,6 +191,10 @@ void CalendarScreen::onSPIData(uint8_t type, uint32_t size, uint8_t* data) {
 
             events.push_back({name, t_start, t_end}); 
         }
+
+        // update current and upcoming events
+        currentEvents = getCurrentEvents(); 
+        upcomingEvents = getNextEvents(4 - currentEvents.size()); 
     }
 
 }
