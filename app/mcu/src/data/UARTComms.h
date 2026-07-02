@@ -24,7 +24,7 @@ enum RxState
 
 class UARTHandler {
     public:
-        virtual void onUARTData(uint8_t type, uint8_t* data, uint8_t size) {}
+        virtual void onUARTData(uint8_t type, uint8_t* data, uint8_t size, std::string uart_name) {}
 };
 
 
@@ -70,7 +70,7 @@ class UARTComms {
             LOG("Packet received: ");
             LOGLN(type); 
             for (auto* handler : uartHandlers) {
-                handler->onUARTData(type, data, size); 
+                handler->onUARTData(type, data, size, name); 
             }
         }
             

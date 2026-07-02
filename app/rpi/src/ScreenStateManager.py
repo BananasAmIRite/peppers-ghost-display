@@ -247,6 +247,18 @@ class ScreenStateManager:
         
         self.update_screen()
 
+    # uart handlers from esp
+    def uart_handler(self, type, data, len):
+        if type == comms.PI_SWIPE and len >= 1:
+            swipe_dir = data[0]
+            if swipe_dir == 0:
+                self.swipe_left()
+            elif swipe_dir == 1:
+                self.swipe_right()
+            elif swipe_dir == 2:
+                self.swipe_up()
+            elif swipe_dir == 3:
+                self.swipe_down()
 
     # thread helpers
     def send_uart_message(self, type: int, payload: bytearray):

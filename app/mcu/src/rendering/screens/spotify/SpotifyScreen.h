@@ -95,7 +95,7 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
         // handlers
         void onSPIData(uint8_t type, uint32_t size, uint8_t* data) override;
 
-        void onUARTData(uint8_t type, uint8_t* data, uint8_t size) override;
+        void onUARTData(uint8_t type, uint8_t* data, uint8_t size, std::string name) override;
 
         void click(Adafruit_GFX* display, uint16_t x, uint16_t y) override;
 

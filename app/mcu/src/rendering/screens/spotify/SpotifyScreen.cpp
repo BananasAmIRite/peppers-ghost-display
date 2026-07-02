@@ -297,7 +297,7 @@ void SpotifyScreen::onSPIData(uint8_t type, uint32_t size, uint8_t* data) {
     }
 }
 
-void SpotifyScreen::onUARTData(uint8_t type, uint8_t* data, uint8_t size) {
+void SpotifyScreen::onUARTData(uint8_t type, uint8_t* data, uint8_t size, std::string name) {
     if (type == SPOTIFY_SET_SONG) {
         if (size < 7) return; 
         uint16_t nameSize;

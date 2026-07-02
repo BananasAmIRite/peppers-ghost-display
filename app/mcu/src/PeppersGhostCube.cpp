@@ -138,8 +138,21 @@ void PeppersGhostCube::setScreen(DeviceScreen newScreen) {
 
 
 // link handlePacket to packet comm
-void PeppersGhostCube::onUARTData(uint8_t type, uint8_t* data, uint8_t len) {
+void PeppersGhostCube::onUARTData(uint8_t type, uint8_t* data, uint8_t len, std::string name) {
     switch (type) {
+
+        case PI_SWIPE: {
+            if (len < 1) return; 
+            // TODO: make this an actual pattern so we don't have to write it each time
+            Serial1.write(0x55);
+            Serial1.write(0x55);
+            Serial1.write(0x02); // swipe type + direction
+            Serial1.write(PI_SWIPE);
+            Serial1.write(data[0]); // swipe direction
+
+
+            break; 
+        }
 
         case SET_SCREEN: 
             if (len < 1) return;
@@ -154,12 +167,10 @@ void PeppersGhostCube::onUARTData(uint8_t type, uint8_t* data, uint8_t len) {
             break; 
     }
 
-    
-    Serial1.write(0x55);
-    Serial1.write(0x55);
-    Serial1.write(0x01);
-    Serial1.write(0x32);
-    Serial1.write(0xFF);
+    // testing
+
+    // Serial1.write(0x32);
+    // Serial1.write(0xFF);
 }
 
 void PeppersGhostCube::onSPIData(uint8_t type, uint32_t length, uint8_t* body) {

@@ -57,7 +57,7 @@ void CursorScreen::render(Adafruit_GFX* tft) {
 
         
 // link handlePacket to packet comm
-void CursorScreen::onUARTData(uint8_t type, uint8_t* data, uint8_t len) {
+void CursorScreen::onUARTData(uint8_t type, uint8_t* data, uint8_t len, std::string name) {
     switch (type) {
         case CURSOR_SET:
             if (len < 4) return; 

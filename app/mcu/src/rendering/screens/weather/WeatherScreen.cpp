@@ -111,7 +111,7 @@ void WeatherScreen::updateWeather(float dailyMax, float dailyMin, float curTemp,
 }
 
 
-void WeatherScreen::onUARTData(uint8_t type, uint8_t* data, uint8_t len) {
+void WeatherScreen::onUARTData(uint8_t type, uint8_t* data, uint8_t len, std::string name) {
     
     if (type == WEATHER_SET) {
         // data format: float (32), float, float, uint8_t

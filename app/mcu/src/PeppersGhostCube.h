@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <string.h>
 #include "data/UARTComms.h"
 #include "data/SPIStream.h"
 #include "types/packets.h"
@@ -98,7 +99,7 @@ class PeppersGhostCube : public UARTHandler, public SPIStreamHandler {
 
         
         
-        void onUARTData(uint8_t type, uint8_t* data, uint8_t len) override;
+        void onUARTData(uint8_t type, uint8_t* data, uint8_t len, std::string name) override;
 
         void onSPIData(uint8_t type, uint32_t length, uint8_t* body) override;
 

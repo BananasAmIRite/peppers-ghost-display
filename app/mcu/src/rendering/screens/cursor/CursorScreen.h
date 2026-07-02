@@ -37,5 +37,5 @@ class CursorScreen : public SpriteScreen, public UARTHandler {
 
         
         // link handlePacket to packet comm
-        void onUARTData(uint8_t type, uint8_t* data, uint8_t len) override;
+        void onUARTData(uint8_t type, uint8_t* data, uint8_t len, std::string name) override;
 };

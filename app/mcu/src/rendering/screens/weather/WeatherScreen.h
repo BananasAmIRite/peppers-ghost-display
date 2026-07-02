@@ -73,5 +73,5 @@ class WeatherScreen : public MultipleScreen, public UARTHandler {
         }
 
         
-        void onUARTData(uint8_t type, uint8_t* data, uint8_t len) override;
+        void onUARTData(uint8_t type, uint8_t* data, uint8_t len, std::string name) override;
 };
