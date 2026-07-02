@@ -102,6 +102,23 @@ class ScreenStateManager:
             t.start()
 
     def wait_program(self):
+
+        if not sys.stdin.isatty():
+            # No interactive terminal (e.g. running as a systemd service) —
+            # skip keyboard control and just idle/keep the program alive.
+            print("No TTY detected — WASD keyboard control disabled. Running headless.")
+            try:
+                while True:
+                    time.sleep(1)
+            except KeyboardInterrupt:
+                print("\nProgram terminated gracefully.")
+
+            for t in self.screen_threads:
+                t.stop()
+                t.join()
+            return
+        
+        
         print("\nControl device screens using WASD keys (Ctrl+C to exit):")
         print("  W -> Swipe Up    |  A -> Swipe Left")
         print("  S -> Swipe Down  |  D -> Swipe Right\n")
