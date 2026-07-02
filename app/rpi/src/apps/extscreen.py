@@ -1,9 +1,8 @@
 import time
 import serial
-from pynput import mouse
+from pynput import mouse, keyboard
 import lib.comms.comms as comms
 from screeninfo import get_monitors
-import time
 
 
 CUBE_W = 480
@@ -24,6 +23,9 @@ class CubeBridge:
         self.last_y = 0
 
         self.last_mouse_update = time.time()
+
+        self.mouse_listener = None
+        self.keyboard_listener = None
 
     # ----------------------------
     # Find virtual display
@@ -53,7 +55,6 @@ class CubeBridge:
             bytearray([0x01])
         )
 
-
     def exit_cube(self):
         if not self.inside:
             return
@@ -65,7 +66,6 @@ class CubeBridge:
             comms.CURSOR_VISIBLE,
             bytearray([0x00])
         )
-
 
     # ----------------------------
     # Mouse move
@@ -125,23 +125,78 @@ class CubeBridge:
             comms.send_message(self.serial, comms.CURSOR_UP, bytearray())
 
     # ----------------------------
-    # Start listener
+    # Swipe (only valid while mouse is over the cube screen)
     # ----------------------------
-    def run(self):
-        print("Cube bridge running...")
+    def swipe(self, direction: int, label: str):
+        if not self.inside:
+            return
 
-        with mouse.Listener(
+        print(f"Swipe: {label}")
+        comms.send_message(
+            self.serial,
+            comms.PI_SWIPE,
+            bytearray([direction])
+        )
+
+    # ----------------------------
+    # Keyboard press (global, works regardless of window focus)
+    # ----------------------------
+    def on_key_press(self, key):
+        try:
+            char = key.char.lower()
+        except AttributeError:
+            # special key (ctrl, shift, arrows, etc.) - not something we handle
+            return
+
+        if char == 'a':
+            self.swipe(0x00, "Left")
+        elif char == 'd':
+            self.swipe(0x01, "Right")
+        elif char == 'w':
+            self.swipe(0x02, "Up")
+        elif char == 's':
+            self.swipe(0x03, "Down")
+
+    # ----------------------------
+    # Start listeners
+    # ----------------------------
+    def start(self):
+        print("Cube bridge running...")
+        print("\nWhen the mouse is over the cube screen, use WASD to swipe (Ctrl+C to exit):")
+        print("  W -> Swipe Up    |  A -> Swipe Left")
+        print("  S -> Swipe Down  |  D -> Swipe Right\n")
+
+        self.mouse_listener = mouse.Listener(
             on_move=self.on_move,
             on_click=self.on_click
-        ) as listener:
-            listener.join()
+        )
+        self.mouse_listener.start()
+
+        self.keyboard_listener = keyboard.Listener(
+            on_press=self.on_key_press
+        )
+        self.keyboard_listener.start()
+
+    def stop(self):
+        if self.mouse_listener is not None:
+            self.mouse_listener.stop()
+        if self.keyboard_listener is not None:
+            self.keyboard_listener.stop()
+
+    def run(self):
+        self.start()
+        try:
+            # block main thread until Ctrl+C, while listeners run in background
+            self.keyboard_listener.join()
+        except KeyboardInterrupt:
+            print("\nProgram terminated gracefully.")
 
 
 # ----------------------------
 # Entry point
 # ----------------------------
 if __name__ == "__main__":
-    
+
     ser = serial.Serial()
     ser.port = "COM11"
     ser.baudrate = 115200
@@ -156,10 +211,12 @@ if __name__ == "__main__":
     try:
         bridge.run()
     finally:
+        bridge.stop()
+
         comms.send_message(
             ser,
             comms.CURSOR_VISIBLE,
             bytearray([0x00])
         )
-        
+
         ser.close()

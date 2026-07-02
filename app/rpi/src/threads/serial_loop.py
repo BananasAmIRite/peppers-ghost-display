@@ -37,7 +37,7 @@ class UARTComms:
         self.uart_handlers.append(handler)
 
     def handle_packet(self, type_: int, data: bytes, size: int):
-        print(f"Packet received: {type_}")
+        # print(f"Packet received: {type_}")
         for handler in self.uart_handlers:
             handler(type_, data, size)
 
@@ -54,7 +54,7 @@ class UARTComms:
             return
 
         for b in chunk:
-            print(f"[{self.name}] Got value: {b}")
+            # print(f"[{self.name}] Got value: {b}")
             self.process_byte(b)
 
     def process_byte(self, b: int):
