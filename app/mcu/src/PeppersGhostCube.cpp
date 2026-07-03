@@ -37,31 +37,37 @@ PeppersGhostCube::PeppersGhostCube(Screen* scrnPtr, Adafruit_ImageReader* reader
 void PeppersGhostCube::loop() {
 
     // check heartbeat and set state as necessary
-    if ((millis() - lastHeartbeat) > 5000) curScreen = STARTUP;
+    if ((millis() - lastHeartbeat) > 5000) {
+        screenPtr->setRenderer(&loadingScreen); 
+    } else {
+
+        // Serial.println(curScreen); 
 
 
-    // rendering
 
-    switch (curScreen) {
-        default:
-        case STARTUP: 
-            screenPtr->setRenderer(&loadingScreen); 
-            break;
-        case IDLE: 
-            screenPtr->setRenderer(&idleScreen); 
-            break; 
-        case WEATHER: 
-            screenPtr->setRenderer(&weatherScreen); 
-            break; 
-        case TASKS: 
-            screenPtr->setRenderer(&tasksScreen); 
-            break; 
-        case CALENDAR:
-            screenPtr->setRenderer(&calScreen);
-            break;
-        case SPOTIFY: 
-            screenPtr->setRenderer(&spotifyScreen); 
-            break;
+        // rendering
+
+        switch (curScreen) {
+            default:
+            case STARTUP: 
+                screenPtr->setRenderer(&loadingScreen); 
+                break;
+            case IDLE: 
+                screenPtr->setRenderer(&idleScreen); 
+                break; 
+            case WEATHER: 
+                screenPtr->setRenderer(&weatherScreen); 
+                break; 
+            case TASKS: 
+                screenPtr->setRenderer(&tasksScreen); 
+                break; 
+            case CALENDAR:
+                screenPtr->setRenderer(&calScreen);
+                break;
+            case SPOTIFY: 
+                screenPtr->setRenderer(&spotifyScreen); 
+                break;
+        }
     }
 
 
@@ -167,10 +173,13 @@ void PeppersGhostCube::onUARTData(uint8_t type, uint8_t* data, uint8_t len, std:
             break; 
         }
 
-        case SET_SCREEN: 
+        case SET_SCREEN: {
             if (len < 1) return;
+            // Serial.println("Received set screen"); 
+            // Serial.println(data[0]);
             setScreen((DeviceScreen) data[0]); 
             break;
+        }
 
         case CURSOR_CLICK:
             if (cursorScreen.getCursor()->cursorVisible) screenPtr->getCurrentRenderer()->click(screenPtr->getScreen(), cursorScreen.getCursor()->cursorX, cursorScreen.getCursor()->cursorY); 
