@@ -35,6 +35,11 @@ PeppersGhostCube::PeppersGhostCube(Screen* scrnPtr, Adafruit_ImageReader* reader
 
 
 void PeppersGhostCube::loop() {
+
+    // check heartbeat and set state as necessary
+    if ((millis() - lastHeartbeat) > 5000) curScreen = STARTUP;
+
+
     // rendering
 
     switch (curScreen) {
@@ -127,7 +132,7 @@ void PeppersGhostCube::updatePWMState() {
 
         case TransitionPhase::NONE:
         default:
-            screenPtr->setPWMValue(1023);
+            screenPtr->setPWMValue(curScreen == OFF ? 0 : 1023);
             break;
     }
 }
@@ -170,6 +175,11 @@ void PeppersGhostCube::onUARTData(uint8_t type, uint8_t* data, uint8_t len, std:
         case CURSOR_CLICK:
             if (cursorScreen.getCursor()->cursorVisible) screenPtr->getCurrentRenderer()->click(screenPtr->getScreen(), cursorScreen.getCursor()->cursorX, cursorScreen.getCursor()->cursorY); 
             break; 
+
+        case DEBUG_HEARTBEAT: {
+            lastHeartbeat = millis(); 
+            break; 
+        }
 
         default:
             break; 

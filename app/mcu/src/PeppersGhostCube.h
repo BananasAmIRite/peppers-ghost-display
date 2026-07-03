@@ -61,9 +61,10 @@ struct NextScreen {
 class PeppersGhostCube : public UARTHandler, public SPIStreamHandler {
     private:
         // DeviceState curState = STARTUP; 
-        volatile DeviceScreen curScreen = CALENDAR; 
+        volatile DeviceScreen curScreen = STARTUP; 
         volatile NextScreen nextScreen = {DeviceScreen::NONE, false}; 
         volatile bool screenReadyAfterLoad = false;
+        long lastHeartbeat = millis(); 
         
         Screen* screenPtr; 
 

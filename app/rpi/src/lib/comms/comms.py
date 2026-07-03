@@ -61,6 +61,7 @@ CAL_SET_DATE_TIME = 0x60
 CAL_SET_EVENTS = 0x61
 
 DEBUG_SET_IMAGE = 0xF0
+DEBUG_HEARTBEAT = 0xF1
 
 
 def send_message(serial, type, payload):

@@ -147,6 +147,8 @@ void loop() {
   // } else {
   //   device.setState(IDLE); 
   // }
+
+  // if (!Serial.isConnected())
   
   packetReceiverPC.loop(); 
   packetReceiverPI.loop();

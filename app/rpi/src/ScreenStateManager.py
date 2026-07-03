@@ -87,12 +87,14 @@ class ScreenStateManager:
         thread_spotify = PeriodicThread.PeriodicThread(10, self.spotify_query.query)
         thread_tasks = PeriodicThread.PeriodicThread(60*5, self.tasks_query.query)
         thread_calendar = PeriodicThread.PeriodicThread(60, self.calendar_query.query)
+        thread_heartbeat = PeriodicThread.PeriodicThread(4, lambda: self.send_uart_message(comms.DEBUG_HEARTBEAT, bytearray()))
 
 
         self.screen_threads.append(thread_weather)
         self.screen_threads.append(thread_spotify)
         self.screen_threads.append(thread_tasks)
         self.screen_threads.append(thread_calendar)
+        self.screen_threads.append(thread_heartbeat)
 
         thread_serialread = PeriodicThread.PeriodicThread(0.1, self.uart_comms.loop)
         self.screen_threads.append(thread_serialread)

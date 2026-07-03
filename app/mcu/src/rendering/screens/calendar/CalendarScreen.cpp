@@ -18,7 +18,7 @@ void CalendarScreen::render(Adafruit_GFX* tft) {
     // render date and time
 
     const int startX = 110; 
-    const int startY = 50; 
+    const int startY = 75; 
 
     const int textMargin = 20; 
 
@@ -70,7 +70,7 @@ void CalendarScreen::render(Adafruit_GFX* tft) {
 
 
     // then start drawing
-    int y = timeStartY + textMargin * 3;
+    int y = timeStartY + textMargin * 2;
 
     // ---------- Current events ----------
     if (!currentEvents.empty()) {

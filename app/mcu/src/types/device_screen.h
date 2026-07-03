@@ -3,6 +3,7 @@
 #include <string>
 
 enum DeviceScreen {
+    OFF, 
     STARTUP,
     // perm 
     IDLE, 
