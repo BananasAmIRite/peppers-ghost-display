@@ -8,6 +8,7 @@ PeppersGhostCube::PeppersGhostCube(Screen* scrnPtr, Adafruit_ImageReader* reader
     tasksScreen(), 
     spotifyScreen(), 
     calScreen(),
+    headphoneScreen(),
     packetReceiverPtr(packetReceiver), 
     packetReceiver2Ptr(packetReceiver2), 
     spiStreamPtr(spiReceiver)
@@ -29,6 +30,9 @@ PeppersGhostCube::PeppersGhostCube(Screen* scrnPtr, Adafruit_ImageReader* reader
         packetReceiver->addUARTHandler(&calScreen); 
         packetReceiver2->addUARTHandler(&calScreen);
         spiStreamPtr->addHandler(&calScreen); 
+
+        packetReceiver->addUARTHandler(&headphoneScreen);
+        packetReceiver2->addUARTHandler(&headphoneScreen);
 
         screenPtr->setAuxRenderer(&cursorScreen);
 }
@@ -66,6 +70,9 @@ void PeppersGhostCube::loop() {
                 break;
             case SPOTIFY: 
                 screenPtr->setRenderer(&spotifyScreen); 
+                break; 
+            case HEADPHONE: 
+                screenPtr->setRenderer(&headphoneScreen);
                 break;
         }
     }
@@ -160,15 +167,16 @@ void PeppersGhostCube::setScreen(DeviceScreen newScreen) {
 void PeppersGhostCube::onUARTData(uint8_t type, uint8_t* data, uint8_t len, std::string name) {
     switch (type) {
 
-        case PI_SWIPE: {
+        case PI_MSG: {
             if (len < 1) return; 
             // TODO: make this an actual pattern so we don't have to write it each time
             Serial1.write(0x55);
             Serial1.write(0x55);
-            Serial1.write(0x02); // swipe type + direction
-            Serial1.write(PI_SWIPE);
-            Serial1.write(data[0]); // swipe direction
-
+            Serial1.write(len); // message length
+            Serial1.write(PI_MSG); // pi msg
+            for (uint8_t i = 0; i < len; i++) { // write entire data
+                Serial1.write(data[i]); 
+            }
 
             break; 
         }

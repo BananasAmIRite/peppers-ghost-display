@@ -32,6 +32,9 @@ class ESPSerial:
             if self.ser.is_open:
                 self.ser.close()
 
+    def is_open(self):
+        return self.ser.is_open
+
     
     def write_message(self, type: int, payload: bytearray):
         with self._lock:

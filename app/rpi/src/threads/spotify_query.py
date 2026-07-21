@@ -7,7 +7,7 @@ from utils.image2buf import image_to_buf
 import os
 import requests
 from dotenv import load_dotenv
-from screens import ScreenType
+from rpi.screens import ScreenType
 from threading import Thread
 from utils.lrcutils import parse_lrc
 

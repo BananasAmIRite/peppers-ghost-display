@@ -7,6 +7,7 @@
 #include "./asset/AssetPool.h"
 #include <Arduino.h>
 #include "data/SPIStream.h"
+// #include "esp_usb_console.h"
 
 
 // Serial pins for PI comms
@@ -149,6 +150,10 @@ void loop() {
   // }
 
   // if (!Serial.isConnected())
+
+  // if (Serial) {
+    
+  // }
   
   packetReceiverPC.loop(); 
   packetReceiverPI.loop();

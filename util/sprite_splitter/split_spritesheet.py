@@ -1,28 +1,12 @@
 from PIL import Image
 
-IMAGE_WIDTH = 32
-IMAGE_HEIGHT = 16
-TOTAL_X = 3
+IMAGE_WIDTH = 64
+IMAGE_HEIGHT = 64
+TOTAL_X = 1
 TOTAL_Y = 1
-INPUT_FILE = "clouds.png"
-OUTPUT_PREFIX = "cloud"
+INPUT_FILE = "headphones_0_1.png"
+OUTPUT_PREFIX = "headphones_0_1"
 CONVERT_ALPHA = True
-
-# # Replace 'input.png' with your file path
-# img = Image.open(f'input/{INPUT_FILE}')
-
-# # 2. Convert to RGBA to ensure it has an alpha channel
-# img = img.convert("RGBA")
-
-# # 3. Create a solid background image (bright magenta as transparent color)
-# background = Image.new("RGBA", img.size, (255, 0, 255))
-
-# # 4. Composite the transparent image over the background
-# composite = Image.alpha_composite(background, img)
-
-
-# # 5. Convert to standard RGB and save as JPG
-# rgb_img = composite.convert('RGB')
 
 img = Image.open(f'input/{INPUT_FILE}').convert("RGBA")
 
@@ -54,7 +38,7 @@ for y in range(TOTAL_Y):
         ])
 
         new_img = rgb_img.crop(box)
-        new_img.save(f"output/{OUTPUT_PREFIX}{idx}.bmp")
+        new_img.save(f"output/{OUTPUT_PREFIX}.bmp")
         idx += 1
 
 

@@ -19,6 +19,7 @@
 #include "rendering/screens/tasks/TasksScreen.h"
 #include "rendering/screens/calendar/CalendarScreen.h"
 #include "rendering/screens/spotify/SpotifyScreen.h"
+#include "rendering/screens/headphones/HeadphoneScreen.h"
 
 
 
@@ -82,6 +83,7 @@ class PeppersGhostCube : public UARTHandler, public SPIStreamHandler {
         WeatherScreen weatherScreen; 
         TasksScreen tasksScreen; 
         CalendarScreen calScreen; 
+        HeadphoneScreen headphoneScreen; 
 
         // temporary screens
         SpotifyScreen spotifyScreen; 

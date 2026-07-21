@@ -13,7 +13,8 @@ enum DeviceScreen {
 
     // temp
     SPOTIFY, 
-    MEETINGS, 
+    HEADPHONE, 
+    MEETINGS,
     NONE
 };
 
@@ -29,6 +30,8 @@ inline std::string screen_to_text(DeviceScreen screen) {
             return "Tasks"; 
         case SPOTIFY:
             return "Spotify";
+        case HEADPHONE:
+            return "Headphone"; 
         case MEETINGS:
             return "Meetings";
         default:

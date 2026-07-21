@@ -38,11 +38,14 @@ enum PacketType {
     SPOTIFY_SET_LYRICS = 0x43, // spi
 
     // PI Bypass Commands
-    PI_SWIPE = 0x50, // 0x50 [swipe_direction]
+    PI_MSG = 0x50, // 0x50 [msg_type] [payload]
 
     // Calendar
     CAL_SET_DATE_TIME = 0x60, // [uint64 timestamp] [uint32 offset]
     CAL_SET_EVENTS = 0x61, // {name: string, timestamp: number}
+
+    // Headphone
+    HEADPHONE_UPDATE = 0x70,
 
 
     // debug

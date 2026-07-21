@@ -3,3 +3,4 @@ __pycache__/
 output.txt
 .env
 service_account.json
+headphone_config.json

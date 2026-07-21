@@ -1,0 +1,13 @@
+
+from enum import Enum
+
+class ScreenType(Enum):
+    SCREEN_OFF = 0x00
+    SCREEN_STARTUP = 0x01
+    SCREEN_IDLE = 0x02
+    SCREEN_WEATHER = 0x03
+    SCREEN_TASKS = 0x04
+    SCREEN_CALENDAR = 0x05
+
+    SCREEN_SPOTIFY = 0x06
+    SCREEN_HEADPHONES = 0x07
