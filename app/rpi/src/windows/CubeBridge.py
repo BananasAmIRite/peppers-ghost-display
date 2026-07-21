@@ -56,6 +56,7 @@ class CubeBridge(HostManager):
 
 
         self.host_threads.append(thread_headphones)
+        # self.host_threads.append(PeriodicThread.PeriodicThread(1, lambda: print("SERIAL GOT",self.serial.readline())))
 
     def start_threads(self):
         for t in self.host_threads: 
@@ -67,8 +68,10 @@ class CubeBridge(HostManager):
     def find_cube_monitor(self):
         monitors = get_monitors()
 
+        print(monitors)
+
         for m in monitors:
-            if m.name == '\\\\.\\DISPLAY4':
+            if m.name == '\\\\.\\DISPLAY5':
                 return m
 
         return None
@@ -95,7 +98,7 @@ class CubeBridge(HostManager):
         return
     
     def send_pi_message(self, datatype: int, body: bytes):
-        return self.send_uart_message(comms.PI_MSG, bytes([datatype]) + body)
+        return self.try_send_message(comms.PI_MSG, bytes([datatype]) + body)
 
 
     # ----------------------------
@@ -196,7 +199,7 @@ class CubeBridge(HostManager):
             return
 
         print(f"Swipe: {label}")
-        self.try_send_message(
+        self.send_pi_message(
             comms.PI_SWIPE,
             bytearray([direction])
         )
@@ -315,6 +318,10 @@ class CubeBridge(HostManager):
             # tray icon owns the main thread; listeners run in background
             self.tray_icon.run()
         except KeyboardInterrupt:
+            
+            for t in self.host_threads:
+                t.stop()
+                t.join()
             print("\nProgram terminated gracefully.")
         finally:
             self.stop()

@@ -1,6 +1,6 @@
 from lib.HostManager import HostManager
 
-class EmualtedHostManager(HostManager):
+class EmulatedHostManager(HostManager):
 
     def send_uart_message(self, type: int, payload: bytearray):
         print("Sending uart message", type, payload.hex(" "))

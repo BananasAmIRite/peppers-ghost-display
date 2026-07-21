@@ -65,14 +65,14 @@ class HeadphoneQuery:
                     headphone.available = False
                 packets.append(struct.pack("<2B", headphone.config["id"], headphone.available)) # headphone availability is determined after 5 retries, in case of a timed out packet
         
-        if not self.screen_available and len(packet) > 0:
+        if not self.screen_available and len(packets) > 0:
             # TODO: make this an actual implemented func on the HostManager
-            self.mgr.send_uart_message(comms.PI_MSG, bytes([comms.PI_ADD_TMP_SCRN, ScreenType.SCREEN_HEADPHONES]))
-            self.mgr.send_uart_message(comms.PI_MSG, bytes([comms.PI_ADD_TMP_NTF, ScreenType.SCREEN_HEADPHONES]))
+            self.mgr.send_uart_message(comms.PI_MSG, bytes([comms.PI_ADD_TMP_SCRN, ScreenType.SCREEN_HEADPHONES.value]))
+            self.mgr.send_uart_message(comms.PI_MSG, bytes([comms.PI_ADD_TMP_NTF, ScreenType.SCREEN_HEADPHONES.value]))
             self.screen_available = True
 
-        if self.screen_available and len(packet) == 0:
-            self.mgr.send_uart_message(comms.PI_MSG, bytes([comms.PI_RMV_TMP_SCRN, ScreenType.SCREEN_HEADPHONES]))
+        if self.screen_available and len(packets) == 0:
+            self.mgr.send_uart_message(comms.PI_MSG, bytes([comms.PI_RMV_TMP_SCRN, ScreenType.SCREEN_HEADPHONES.value]))
             self.screen_available = False
 
 

@@ -172,7 +172,7 @@ void PeppersGhostCube::onUARTData(uint8_t type, uint8_t* data, uint8_t len, std:
             // TODO: make this an actual pattern so we don't have to write it each time
             Serial1.write(0x55);
             Serial1.write(0x55);
-            Serial1.write(len); // message length
+            Serial1.write(len+1); // message length
             Serial1.write(PI_MSG); // pi msg
             for (uint8_t i = 0; i < len; i++) { // write entire data
                 Serial1.write(data[i]); 
