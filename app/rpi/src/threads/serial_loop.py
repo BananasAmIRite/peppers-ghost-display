@@ -58,6 +58,7 @@ class UARTComms:
             self.process_byte(b)
 
     def process_byte(self, b: int):
+        print("Received Byte:", b)
         if self.state == RxState.WAIT_SYNC1:
             self.state = RxState.WAIT_SYNC2 if b == SYNC_BYTE else RxState.WAIT_SYNC1
 

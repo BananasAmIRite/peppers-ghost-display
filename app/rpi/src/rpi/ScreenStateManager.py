@@ -267,6 +267,7 @@ class ScreenStateManager(HostManager):
     # uart handlers from esp
     def uart_handler(self, type, data, len):
         if type == comms.PI_MSG and len >= 1:
+            print("PI MESSAGE", data, len)
             datatype = data[0]
             if datatype == comms.PI_SWIPE:
                 swipe_dir = data[1]
