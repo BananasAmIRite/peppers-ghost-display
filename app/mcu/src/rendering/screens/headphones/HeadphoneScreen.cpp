@@ -32,7 +32,7 @@ HeadphoneScreen::HeadphoneScreen() : SpriteScreen({
     "battery1.bmp", // 8 - 75%
     "battery0.bmp" // 9 - 100%
 }) {
-    headphones.push_back(std::make_shared<BoseHeadphoneData>(0, 100, "Jason's Headphones", 3, 1)); 
+    // headphones.push_back(std::make_shared<BoseHeadphoneData>(1, 100, "Jason's Headphones", 3, 1)); 
 }
 
 void HeadphoneScreen::render(Adafruit_GFX* tft) {
@@ -155,4 +155,7 @@ void HeadphoneScreen::onUARTData(uint8_t type, uint8_t* data, uint8_t size, std:
     }
 }
 
-void HeadphoneScreen::click(Adafruit_GFX* display, uint16_t x, uint16_t y) {}
+void HeadphoneScreen::click(Adafruit_GFX* display, uint16_t x, uint16_t y) {
+    cur_idx++; 
+    cur_idx %= headphones.size(); 
+}

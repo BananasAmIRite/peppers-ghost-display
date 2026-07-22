@@ -12,6 +12,8 @@ import lib.PeriodicThread as PeriodicThread
 from lib.HostManager import HostManager
 from lib.comms.ESPSerial import ESPSerial
 
+from rpi.screens import ScreenType
+
 from threads.headphone_query import HeadphoneQuery
 
 
@@ -76,7 +78,7 @@ class CubeBridge(HostManager):
 
         return None
     
-    def try_send_message(self, type, bytes):
+    def send_uart_message(self, type: int, payload: bytearray):
         if not self.serial.is_open():
             try:
                 self.serial.open()
@@ -85,20 +87,27 @@ class CubeBridge(HostManager):
                 return
         
         try:
-            self.send_uart_message(type, bytes)
+            return self.serial.write_message(type, payload)
         except:
             print("Serial comm failed. Closing port")
             self.serial.close()
-
-    def send_uart_message(self, type: int, payload: bytearray):
-        return self.serial.write_message(type, payload)
     
     def send_spi_message(self, data_type: int, body: bytes):
         print("Tried sending SPI message, but not capable. ") # make this error?
         return
     
     def send_pi_message(self, datatype: int, body: bytes):
-        return self.try_send_message(comms.PI_MSG, bytes([datatype]) + body)
+        return self.send_uart_message(comms.PI_MSG, bytes([datatype]) + body)
+
+
+    def add_temp_screen(self, temp_screen: ScreenType):
+        self.send_pi_message(comms.PI_ADD_TMP_SCRN, bytes([temp_screen.value]))
+
+    def add_temp_notif(self, temp_screen: ScreenType):
+        self.send_pi_message(comms.PI_ADD_TMP_NTF, bytes([temp_screen.value]))
+
+    def remove_temp_screen(self, temp_screen: ScreenType):
+        self.send_pi_message(comms.PI_RMV_TMP_SCRN, bytes([temp_screen.value]))
 
 
     # ----------------------------
@@ -110,7 +119,7 @@ class CubeBridge(HostManager):
 
         self.inside = True
 
-        self.try_send_message(
+        self.send_uart_message(
             comms.CURSOR_VISIBLE,
             bytearray([0x01])
         )
@@ -121,7 +130,7 @@ class CubeBridge(HostManager):
 
         self.inside = False
 
-        self.try_send_message(
+        self.send_uart_message(
             comms.CURSOR_VISIBLE,
             bytearray([0x00])
         )
@@ -161,7 +170,7 @@ class CubeBridge(HostManager):
 
         if (time.time() - self.last_mouse_update) > 1 / 15:
 
-            self.try_send_message(
+            self.send_uart_message(
                 comms.CURSOR_SET,
                 bytearray([
                     (cube_x >> 8) & 0xFF,
@@ -183,10 +192,10 @@ class CubeBridge(HostManager):
             return
 
         if pressed:
-            self.try_send_message(comms.CURSOR_DOWN, bytearray())
-            self.try_send_message(comms.CURSOR_CLICK, bytearray())
+            self.send_uart_message(comms.CURSOR_DOWN, bytearray())
+            self.send_uart_message(comms.CURSOR_CLICK, bytearray())
         else:
-            self.try_send_message(comms.CURSOR_UP, bytearray())
+            self.send_uart_message(comms.CURSOR_UP, bytearray())
 
     # ----------------------------
     # Swipe (only valid while mouse is over the cube screen)

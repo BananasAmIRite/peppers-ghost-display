@@ -32,19 +32,13 @@ class BoseHeadphones(HeadphoneDriver):
         self.address = address
         self.channel = 8
 
+        self.is_connected = False
+
         self.device.settimeout(2)
 
     def start(self):
+        self.device = bluetooth.BluetoothSocket(Protocols.RFCOMM)
         return self.device.connect_ex((self.address, self.channel))
-
-    def is_connected(self):
-        try:
-            # Request the remote address
-            self.device.getpeername()
-            return True
-        except (bluetooth.BluetoothError, Exception):
-            # Raises an error if disconnected or never connected
-            return False
 
     def is_available(self):
         devices = bluetooth.discover_devices(lookup_names=False)
@@ -63,13 +57,21 @@ class BoseHeadphones(HeadphoneDriver):
         return self.create_packet(function_block, function_id, 0, 0, operator, payload)
 
     def write_value(self, packet: bytes):
-        if not self.is_connected():
+        if not self.is_connected:
+            print("Not connected! Trying to connect")
             res = self.start()
             if res != 0: 
-                return -1
+                raise RuntimeError("Could not connect. ")
+            else:
+                self.is_connected = True
 
-        self.device.send(packet)
-        return self.device.recv(1024)
+        try:
+            self.device.send(packet)
+            data = self.device.recv(1024)
+            return data
+        except Exception as e:
+            self.is_connected = False
+            print("Error while writing value: ", e)
     
     
     def get_battery(self):
