@@ -71,7 +71,7 @@ class CubeBridge(HostManager):
         print(monitors)
 
         for m in monitors:
-            if m.name == '\\\\.\\DISPLAY5':
+            if m.name == '\\\\.\\DISPLAY4':
                 return m
 
         return None
