@@ -69,9 +69,9 @@ CAL_SET_EVENTS = 0x61
 # HEADPHONES
 HEADPHONE_UPDATE = 0x70
 
-
 DEBUG_SET_IMAGE = 0xF0
 DEBUG_HEARTBEAT = 0xF1
+DEBUG_HOST_HEARTBEAT = 0xF2 # laptop host -> esp heartbeat
 
 
 def send_message(serial, type, payload):

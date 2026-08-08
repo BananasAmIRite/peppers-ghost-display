@@ -15,7 +15,7 @@ from lib.comms.ESPSerial import ESPSerial
 from rpi.screens import ScreenType
 
 from threads.headphone_query import HeadphoneQuery
-
+from threads.heartbeat import heartbeat
 
 CUBE_W = 480
 CUBE_H = 320
@@ -55,9 +55,11 @@ class CubeBridge(HostManager):
         # TODO: add more threads here
         # represents update threads for each of the screens (camera update thread will be separate from this!)
         thread_headphones = PeriodicThread.PeriodicThread(10, self.headphone_query.query)
+        thread_heartbeat = PeriodicThread.PeriodicThread(30, heartbeat, self)
 
 
         self.host_threads.append(thread_headphones)
+        self.host_threads.append(thread_heartbeat)
         # self.host_threads.append(PeriodicThread.PeriodicThread(1, lambda: print("SERIAL GOT",self.serial.readline())))
 
     def start_threads(self):

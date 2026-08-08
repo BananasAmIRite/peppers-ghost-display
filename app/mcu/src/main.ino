@@ -1,5 +1,4 @@
 
-// #include <Adafruit_ST7789.h>
 #include <Adafruit_HX8357.h>
 #include <Adafruit_ImageReader.h>
 #include "./data/UARTComms.h"
@@ -7,7 +6,6 @@
 #include "./asset/AssetPool.h"
 #include <Arduino.h>
 #include "data/SPIStream.h"
-// #include "esp_usb_console.h"
 
 
 // Serial pins for PI comms
@@ -34,7 +32,6 @@ SPIClass spi = SPIClass(FSPI); // You can also use HSPI
 #define RPI_MISO 13
 #define RPI_CS 10
 
-// Adafruit_ST7789 tft = Adafruit_ST7789(&spi, TFT_CS, TFT_DC, TFT_RST);
 Adafruit_HX8357 tft = Adafruit_HX8357(
   &spi, TFT_CS, TFT_DC, TFT_RST
 );
@@ -47,12 +44,6 @@ Screen screen(&tft, 30, TFT_BLK);
 // packet receiver
 UARTComms packetReceiverPC("Laptop", Serial); 
 UARTComms packetReceiverPI("RPI", Serial1); 
-// SPITransport spiReceiverPI
-      // SPI3_HOST,    // SPI Host Peripherals Select
-      //   RPI_MOSI, RPI_MISO, RPI_CS, RPI_SCK, 
-      //   4096, 
-      //   4096, 
-      //   4*1024*1024
 SPIStream spiReceiverPI(SPI3_HOST, 15, 17); 
 
 
@@ -124,36 +115,6 @@ void setup() {
 
 
 void loop() {
-
-    // if (rpispi.receiveImage())
-    // {
-    //     auto* canvas = rpispi.canvas();
-
-    //     // tft.drawRGBBitmap(
-    //     //     0,
-    //     //     0,
-    //     //     canvas->getBuffer(),
-    //     //     canvas->width(),
-    //     //     canvas->height());
-    //     Serial.println("received image!");
-
-    //     // Serial.println(canvas->width()); 
-    //     // Serial.println(canvas->height()); 
-    // }
-
-    // Serial.println("Heartbeat"); 
-
-  // if (device_suspended) {
-  //   device.setState(WORK);
-  // } else {
-  //   device.setState(IDLE); 
-  // }
-
-  // if (!Serial.isConnected())
-
-  // if (Serial) {
-    
-  // }
   
   packetReceiverPC.loop(); 
   packetReceiverPI.loop();

@@ -50,5 +50,6 @@ enum PacketType {
 
     // debug
     DEBUG_SET_IMAGE = 0xF0, 
-    DEBUG_HEARTBEAT = 0xF1
+    DEBUG_HEARTBEAT = 0xF1, 
+    DEBUG_HOST_HEARTBEAT = 0xF2
 };

@@ -66,6 +66,7 @@ class PeppersGhostCube : public UARTHandler, public SPIStreamHandler {
         volatile NextScreen nextScreen = {DeviceScreen::NONE, false}; 
         volatile bool screenReadyAfterLoad = false;
         long lastHeartbeat = millis(); 
+        long lastHostHeartbeat = millis(); 
         
         Screen* screenPtr; 
 
@@ -74,6 +75,8 @@ class PeppersGhostCube : public UARTHandler, public SPIStreamHandler {
         SPIStream* spiStreamPtr; 
 
         CursorScreen cursorScreen; 
+
+        EmptyScreen emptyScreen; 
 
         // 
         LoadingScreen loadingScreen; 

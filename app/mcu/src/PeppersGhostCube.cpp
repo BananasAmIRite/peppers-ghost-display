@@ -3,6 +3,7 @@
 PeppersGhostCube::PeppersGhostCube(Screen* scrnPtr, Adafruit_ImageReader* reader, UARTComms* packetReceiver, UARTComms* packetReceiver2, SPIStream* spiReceiver) : 
     screenPtr(scrnPtr), 
     loadingScreen(333), 
+    emptyScreen(),
     idleScreen(), 
     weatherScreen(), 
     tasksScreen(), 
@@ -41,13 +42,11 @@ PeppersGhostCube::PeppersGhostCube(Screen* scrnPtr, Adafruit_ImageReader* reader
 void PeppersGhostCube::loop() {
 
     // check heartbeat and set state as necessary
-    if ((millis() - lastHeartbeat) > 5000) {
+    if ((millis() - lastHostHeartbeat) > 60000) {
+        screenPtr->setRenderer(&emptyScreen); // completely off
+    } else if ((millis() - lastHeartbeat) > 5000) {
         screenPtr->setRenderer(&loadingScreen); 
     } else {
-
-        // Serial.println(curScreen); 
-
-
 
         // rendering
 
@@ -157,7 +156,6 @@ void PeppersGhostCube::setScreen(DeviceScreen newScreen) {
     nextScreen.transitionStart = millis();
     nextScreen.phase = TransitionPhase::FADING_OUT;
     screenReadyAfterLoad = false;
-    // ledcFade(6, 1024, 0, 2000);  
 }
 
 
@@ -196,6 +194,10 @@ void PeppersGhostCube::onUARTData(uint8_t type, uint8_t* data, uint8_t len, std:
         case DEBUG_HEARTBEAT: {
             lastHeartbeat = millis(); 
             break; 
+        }
+
+        case DEBUG_HOST_HEARTBEAT: {
+            lastHostHeartbeat = millis(); 
         }
 
         default:
