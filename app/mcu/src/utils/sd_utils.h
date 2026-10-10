@@ -3,21 +3,28 @@
 #include <Adafruit_ImageReader.h>
 #include <SdFat.h>
 #include <cstring>
+#include "Debug.h"
 
 extern SdFat SD;
 
 // constexpr uint32_t MAX_SPI_FILE_SIZE = 100 * 1024;
 
 inline bool writeFile(const char* path, const uint8_t* data, uint32_t length) {
-    // if (!path || !path[0] || !data || length > MAX_SPI_FILE_SIZE) {
-    //     return false;
-    // }
-
-    if (path[0] == '/' || path[0] == '\\' || strstr(path, "..")) {
+    if (!path || !path[0] || !data || strstr(path, "..")) {
         return false;
     }
 
-    File32 file = SD.open(path, O_WRITE | O_CREAT | O_TRUNC);
+    const char* filePath = path;
+    if (filePath[0] == '/') {
+        filePath++;
+    } else if (filePath[0] == '\\') {
+        return false;
+    }
+
+    LOGLN(path); 
+    LOGLN(length); 
+
+    File32 file = SD.open(filePath, O_WRITE | O_CREAT | O_TRUNC);
     if (!file) {
         return false;
     }

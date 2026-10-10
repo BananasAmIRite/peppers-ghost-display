@@ -103,6 +103,8 @@ class PeppersGhostCube : public UARTHandler, public SPIStreamHandler {
         
         void loop();
 
+        void initializeAssets();
+
         void updatePWMState();
 
         void setScreen(DeviceScreen newScreen);

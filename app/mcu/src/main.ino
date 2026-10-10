@@ -72,6 +72,7 @@ void setup() {
 
   SD.begin(config);
   AssetPool::init(reader); 
+  device.initializeAssets();
 
 
   tft.begin(); 

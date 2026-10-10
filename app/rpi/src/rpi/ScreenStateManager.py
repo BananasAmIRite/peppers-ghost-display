@@ -15,6 +15,7 @@ import tty
 import termios
 import sys
 import select
+import requests
 from rpi.screens import ScreenType
 import threading
 from lib.HostManager import HostManager
@@ -88,7 +89,7 @@ class ScreenStateManager(HostManager):
         thread_spotify = PeriodicThread.PeriodicThread(10, self.spotify_query.query)
         thread_tasks = PeriodicThread.PeriodicThread(60*5, self.tasks_query.query)
         thread_calendar = PeriodicThread.PeriodicThread(60, self.calendar_query.query)
-        thread_heartbeat = PeriodicThread.PeriodicThread(4, lambda: self.send_uart_message(comms.DEBUG_HEARTBEAT, bytearray()))
+        thread_heartbeat = PeriodicThread.PeriodicThread(4, self.send_heartbeat)
 
 
         self.screen_threads.append(thread_weather)
@@ -99,6 +100,18 @@ class ScreenStateManager(HostManager):
 
         thread_serialread = PeriodicThread.PeriodicThread(0.1, self.uart_comms.loop)
         self.screen_threads.append(thread_serialread)
+
+    def send_heartbeat(self):
+        wifi_on = self.check_wifi()
+        self.send_uart_message(comms.DEBUG_HEARTBEAT, bytearray([wifi_on]))
+
+    @staticmethod
+    def check_wifi():
+        try:
+            requests.get("https://www.google.com", timeout=2)
+            return 1
+        except requests.RequestException:
+            return 0
 
     def start_threads(self):
         for t in self.screen_threads: 

@@ -33,6 +33,8 @@ class CursorScreen : public SpriteScreen, public UARTHandler {
         bool device_connected;
         bool wifi_connected; 
 
+        bool stat_visible = true; 
+
     public: 
         CursorScreen();
 
@@ -42,6 +44,10 @@ class CursorScreen : public SpriteScreen, public UARTHandler {
         void set_status(bool dev_conn, bool wifi_conn) {
             device_connected = dev_conn; 
             wifi_connected = wifi_conn; 
+        }
+
+        void set_stat_visible(bool visible) {
+            stat_visible = visible; 
         }
 
         void render(Adafruit_GFX* tft) override;

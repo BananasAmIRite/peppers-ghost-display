@@ -35,21 +35,26 @@ PeppersGhostCube::PeppersGhostCube(Screen* scrnPtr, Adafruit_ImageReader* reader
         packetReceiver->addUARTHandler(&headphoneScreen);
         packetReceiver2->addUARTHandler(&headphoneScreen);
 
-        screenPtr->setAuxRenderer(&cursorScreen);
+}
+
+// fix initialization bug that stops aux screens from loading sprites in SpriteScreen
+void PeppersGhostCube::initializeAssets() {
+    screenPtr->setAuxRenderer(&cursorScreen);
 }
 
 
 void PeppersGhostCube::loop() {
 
+    cursorScreen.set_status((millis() - lastHeartbeat) < 5000, ((millis() - lastHeartbeat) < 5000) && last_wifi_enabled); 
+
     // check heartbeat and set state as necessary
     if ((millis() - lastHostHeartbeat) > 60000) {
         screenPtr->setRenderer(&emptyScreen); // completely off
-    } else if ((millis() - lastHeartbeat) > 5000) {
-        screenPtr->setRenderer(&loadingScreen); 
+        cursorScreen.set_stat_visible(false); 
     } else {
 
         // rendering
-
+        cursorScreen.set_stat_visible(true); 
         switch (curScreen) {
             default:
             case STARTUP: 
