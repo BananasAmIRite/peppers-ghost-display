@@ -45,7 +45,7 @@ void PeppersGhostCube::initializeAssets() {
 
 void PeppersGhostCube::loop() {
 
-    cursorScreen.set_status((millis() - lastHeartbeat) < 5000, ((millis() - lastHeartbeat) < 5000) && last_wifi_enabled); 
+    cursorScreen.set_status((millis() - lastHeartbeat) < 10000, ((millis() - lastHeartbeat) < 10000) && last_wifi_enabled); 
 
     // check heartbeat and set state as necessary
     if ((millis() - lastHostHeartbeat) > 60000) {
