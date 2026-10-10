@@ -6,6 +6,7 @@
 #include "data/SPIStream.h"
 #include "types/packets.h"
 #include "types/device_screen.h"
+#include "utils/sd_utils.h"
 
 #include "rendering/Screen.h"
 #include "rendering/screens/SlidingScreen.h"
@@ -66,6 +67,7 @@ class PeppersGhostCube : public UARTHandler, public SPIStreamHandler {
         volatile NextScreen nextScreen = {DeviceScreen::NONE, false}; 
         volatile bool screenReadyAfterLoad = false;
         long lastHeartbeat = millis(); 
+        bool last_wifi_enabled = false; 
         long lastHostHeartbeat = millis(); 
         
         Screen* screenPtr; 
@@ -74,7 +76,9 @@ class PeppersGhostCube : public UARTHandler, public SPIStreamHandler {
         UARTComms* packetReceiver2Ptr; 
         SPIStream* spiStreamPtr; 
 
-        CursorScreen cursorScreen; 
+        // aux screens
+        CursorScreen cursorScreen;
+         
 
         EmptyScreen emptyScreen; 
 

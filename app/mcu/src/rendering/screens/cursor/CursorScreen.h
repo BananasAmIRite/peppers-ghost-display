@@ -13,6 +13,8 @@
 #define CURSOR_RECT_WIDTH_CLICK 3*6
 #define CURSOR_RECT_THICKNESS_CLICK 6
 
+#define STAT_IMG_SCALE 2
+
 struct CursorState {
     uint16_t cursorX = 0; 
     uint16_t cursorY = 0; 
@@ -28,10 +30,19 @@ class CursorScreen : public SpriteScreen, public UARTHandler {
     private:
         CursorState state; 
 
+        bool device_connected;
+        bool wifi_connected; 
+
     public: 
         CursorScreen();
 
         CursorState* getCursor();
+
+        
+        void set_status(bool dev_conn, bool wifi_conn) {
+            device_connected = dev_conn; 
+            wifi_connected = wifi_conn; 
+        }
 
         void render(Adafruit_GFX* tft) override;
 

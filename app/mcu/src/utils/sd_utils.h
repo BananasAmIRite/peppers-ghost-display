@@ -1,6 +1,32 @@
 #pragma once
 #include <Adafruit_GFX.h>
 #include <Adafruit_ImageReader.h>
+#include <SdFat.h>
+#include <cstring>
+
+extern SdFat SD;
+
+// constexpr uint32_t MAX_SPI_FILE_SIZE = 100 * 1024;
+
+inline bool writeFile(const char* path, const uint8_t* data, uint32_t length) {
+    // if (!path || !path[0] || !data || length > MAX_SPI_FILE_SIZE) {
+    //     return false;
+    // }
+
+    if (path[0] == '/' || path[0] == '\\' || strstr(path, "..")) {
+        return false;
+    }
+
+    File32 file = SD.open(path, O_WRITE | O_CREAT | O_TRUNC);
+    if (!file) {
+        return false;
+    }
+
+    size_t written = file.write(data, length);
+    bool success = written == length;
+    file.close();
+    return success;
+}
 
 constexpr uint16_t TRANSPARENT = 0xF81F; // bright magenta
 

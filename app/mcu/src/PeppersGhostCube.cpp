@@ -192,7 +192,9 @@ void PeppersGhostCube::onUARTData(uint8_t type, uint8_t* data, uint8_t len, std:
             break; 
 
         case DEBUG_HEARTBEAT: {
-            lastHeartbeat = millis(); 
+            lastHeartbeat = millis();
+            if (len < 1) return;
+            last_wifi_enabled = data[0]; 
             break; 
         }
 
@@ -211,6 +213,24 @@ void PeppersGhostCube::onUARTData(uint8_t type, uint8_t* data, uint8_t len, std:
 }
 
 void PeppersGhostCube::onSPIData(uint8_t type, uint32_t length, uint8_t* body) {
+    if (type != SD_FILE_WRITE || length < 2) {
+        return;
+    }
+
+    uint16_t pathLength = static_cast<uint16_t>(body[0]) |
+                          (static_cast<uint16_t>(body[1]) << 8);
+    uint32_t headerLength = 2 + pathLength;
+    if (pathLength == 0 || pathLength >= 256 || headerLength > length) {
+        LOGLN("Invalid file packet");
+        return;
+    }
+
+    char path[256];
+    memcpy(path, body + 2, pathLength);
+    path[pathLength] = '\0';
+
+    bool success = writeFile(path, body + headerLength, length - headerLength);
+    LOGLN(success ? "File written" : "File write failed");
 
 }
 

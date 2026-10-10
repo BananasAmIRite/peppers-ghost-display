@@ -47,6 +47,8 @@ enum PacketType {
     // Headphone
     HEADPHONE_UPDATE = 0x70,
 
+    // SD card file transfer: [uint16 path length][path][file data]
+    SD_FILE_WRITE = 0x80,
 
     // debug
     DEBUG_SET_IMAGE = 0xF0, 

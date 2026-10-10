@@ -10,8 +10,10 @@
 
 
 CursorScreen::CursorScreen() : SpriteScreen({
-    "/cursor.bmp"
-}) {
+    "/cursor.bmp", 
+    "/wifi0.bmp", "wifi1.bmp", // wifi status
+    "/marks0.bmp", "marks1.bmp" // wifi status
+}), device_connected(false), wifi_connected(false) {
 
 }
 
@@ -52,6 +54,10 @@ void CursorScreen::render(Adafruit_GFX* tft) {
         drawCenteredText(tft, text2.c_str(), tft->width() / 2 + SCRN_OFFSET, tft->height() - 20);
 
     }
+
+    // status bar
+    drawSprite(tft, 1, tft->width() * 14 / 16 + SCRN_OFFSET, tft->height() * 1 / 16, STAT_IMG_SCALE);
+    drawSprite(tft, 2, tft->width() * 15 / 16 + SCRN_OFFSET, tft->height() * 1 / 16, STAT_IMG_SCALE);
 
 }
 

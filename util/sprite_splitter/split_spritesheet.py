@@ -1,11 +1,11 @@
 from PIL import Image
 
-IMAGE_WIDTH = 64
-IMAGE_HEIGHT = 64
-TOTAL_X = 1
+IMAGE_WIDTH = 16
+IMAGE_HEIGHT = 16
+TOTAL_X = 2
 TOTAL_Y = 1
-INPUT_FILE = "headphones_0_1.png"
-OUTPUT_PREFIX = "headphones_0_1"
+INPUT_FILE = "wifi.png"
+OUTPUT_PREFIX = "wifi"
 CONVERT_ALPHA = True
 
 img = Image.open(f'input/{INPUT_FILE}').convert("RGBA")
@@ -38,7 +38,7 @@ for y in range(TOTAL_Y):
         ])
 
         new_img = rgb_img.crop(box)
-        new_img.save(f"output/{OUTPUT_PREFIX}.bmp")
+        new_img.save(f"output/{OUTPUT_PREFIX}{idx}.bmp")
         idx += 1
 
 
