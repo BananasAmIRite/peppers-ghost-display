@@ -85,7 +85,7 @@ class ScreenStateManager(HostManager):
         
         # TODO: add more threads here
         # represents update threads for each of the screens (camera update thread will be separate from this!)
-        thread_weather = PeriodicThread.PeriodicThread(60*30, weather_query, self, LATITUDE, LONGITUDE)
+        thread_weather = PeriodicThread.PeriodicThread(30, weather_query, self, LATITUDE, LONGITUDE)
         thread_spotify = PeriodicThread.PeriodicThread(10, self.spotify_query.query)
         thread_tasks = PeriodicThread.PeriodicThread(60*5, self.tasks_query.query)
         thread_calendar = PeriodicThread.PeriodicThread(60, self.calendar_query.query)
