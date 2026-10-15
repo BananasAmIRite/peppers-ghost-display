@@ -15,8 +15,26 @@ CalendarScreen::CalendarScreen() {
 }
 
 void CalendarScreen::render(Adafruit_GFX* tft) {
-    // render date and time
+    // Refresh event lists once per minute while continuing to render every frame.
+    unsigned long now = millis();
+    if (!events_initialized || now - last_event_update >= 60000UL) {
+        std::vector<RunningCalendarEvent> refreshedCurrentEvents = getCurrentEvents();
+        std::vector<RunningCalendarEvent> refreshedUpcomingEvents =
+            getNextEvents(4 - refreshedCurrentEvents.size());
 
+        if (!eventListsEqual(currentEvents, refreshedCurrentEvents)) {
+            currentEvents = refreshedCurrentEvents;
+        }
+        if (!eventListsEqual(upcomingEvents, refreshedUpcomingEvents)) {
+            upcomingEvents = refreshedUpcomingEvents;
+        }
+
+        last_event_update = now;
+        events_initialized = true; 
+    }
+
+
+    // render date and time
     const int startX = 110; 
     const int startY = 75; 
 
@@ -112,6 +130,23 @@ void CalendarScreen::render(Adafruit_GFX* tft) {
     }
 }
 
+bool CalendarScreen::eventListsEqual(
+    const std::vector<RunningCalendarEvent>& first,
+    const std::vector<RunningCalendarEvent>& second
+) const {
+    if (first.size() != second.size()) return false;
+
+    for (size_t i = 0; i < first.size(); i++) {
+        if (first[i].timestampStart != second[i].timestampStart ||
+            first[i].timestampEnd != second[i].timestampEnd ||
+            first[i].name.getFullText() != second[i].name.getFullText()) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 std::vector<RunningCalendarEvent> CalendarScreen::getCurrentEvents() {
     std::vector<RunningCalendarEvent> current;
 
@@ -192,9 +227,8 @@ void CalendarScreen::onSPIData(uint8_t type, uint32_t size, uint8_t* data) {
             events.push_back({name, t_start, t_end}); 
         }
 
-        // update current and upcoming events
-        currentEvents = getCurrentEvents(); 
-        upcomingEvents = getNextEvents(4 - currentEvents.size()); 
+        events_initialized = false; 
+
     }
 
 }

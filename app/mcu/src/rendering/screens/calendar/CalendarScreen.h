@@ -34,11 +34,18 @@ class CalendarScreen : public Renderable, public UARTHandler, public SPIStreamHa
         unsigned long long cal_timestamp = 0ULL; 
         int32_t cal_offset = 0; 
         unsigned long long last_message = 0; 
+        unsigned long last_event_update = 0; 
+        bool events_initialized = false; 
         
         std::vector<CalendarEvent> events; 
 
         std::vector<RunningCalendarEvent> currentEvents; 
         std::vector<RunningCalendarEvent> upcomingEvents; 
+
+        bool eventListsEqual(
+            const std::vector<RunningCalendarEvent>& first,
+            const std::vector<RunningCalendarEvent>& second
+        ) const;
 
     public: 
         CalendarScreen();
