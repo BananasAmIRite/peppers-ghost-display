@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from rpi.screens import ScreenType
 from threading import Thread
 from utils.lrcutils import parse_lrc
-from utils.romanize import romanize
+from utils.romanize import romanize, detect_language
 
 class SpotifyQuery:
     def __init__(self, mgr, spotify_client_id: str, spotify_secret: str):
@@ -140,8 +140,11 @@ class SpotifyQuery:
             synced_lyrics = json["syncedLyrics"]
 
             parsed_lyrics = parse_lrc(synced_lyrics)
+            # identify the song's language from all of its lyrics at once, so every line is
+            # romanized consistently (e.g. kanji-only lines in a Japanese song)
+            lang = detect_language(track_name + "\n" + "\n".join(line["text"] for line in parsed_lyrics))
             for line in parsed_lyrics:
-                line["text"] = romanize(line["text"])
+                line["text"] = romanize(line["text"], lang)
             parsed_lyrics_json = str(parsed_lyrics)
 
             parsed_lyrics_bytes = parsed_lyrics_json.encode('utf-8')
