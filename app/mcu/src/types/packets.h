@@ -36,6 +36,8 @@ enum PacketType {
     SPOTIFY_SET_IMAGE = 0x41, // spi
     SPOTIFY_UPDATE_SONG = 0x42, // uart
     SPOTIFY_SET_LYRICS = 0x43, // spi
+    SPOTIFY_SPECTRUM = 0x44, // uart, laptop -> esp: [SPECTRUM_BANDS x uint8 level]
+    SPOTIFY_VIZ_STATE = 0x45, // uart, esp -> laptop: [uint8 active]; resent every second while active as a keepalive
 
     // PI Bypass Commands
     PI_MSG = 0x50, // 0x50 [msg_type] [payload]

@@ -36,11 +36,12 @@ class ESPSerial:
         return self.ser.is_open
 
     
-    def write_message(self, type: int, payload: bytearray):
+    def write_message(self, type: int, payload: bytearray, log: bool = True):
         with self._lock:
             if not self.ser.is_open:
                 raise serial.SerialException("Port is closed.")
-            print("sending message: ", type, payload)
+            if log:
+                print("sending message: ", type, payload)
             return self.ser.write(bytearray([0x55, 0x55]) + bytearray([len(payload) + 1, type]) + payload)
 
     def read(self, size: int = 1) -> bytes:

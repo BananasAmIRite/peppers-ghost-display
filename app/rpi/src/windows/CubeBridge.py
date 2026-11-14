@@ -16,6 +16,8 @@ from rpi.screens import ScreenType
 
 from threads.headphone_query import HeadphoneQuery
 from threads.heartbeat import heartbeat
+from threads.serial_loop import UARTComms
+from windows.SpectrumVisualizer import SpectrumVisualizer
 
 CUBE_W = 480
 CUBE_H = 320
@@ -46,6 +48,11 @@ class CubeBridge(HostManager):
 
         self.host_threads = []
 
+        # cube -> laptop packets (spectrum visualizer start/stop)
+        self.uart_rx = UARTComms("Cube", self.serial)
+        self.uart_rx.add_uart_handler(self.uart_handler)
+        self.spectrum = SpectrumVisualizer(self)
+
         with open("../headphone_config.json", "r", encoding="utf-8") as file:
             data = json.load(file)
             self.headphone_query = HeadphoneQuery(self, data)
@@ -56,10 +63,12 @@ class CubeBridge(HostManager):
         # represents update threads for each of the screens (camera update thread will be separate from this!)
         thread_headphones = PeriodicThread.PeriodicThread(10, self.headphone_query.query)
         thread_heartbeat = PeriodicThread.PeriodicThread(30, heartbeat, self)
+        thread_serial_rx = PeriodicThread.PeriodicThread(0.02, self.read_serial)
 
 
         self.host_threads.append(thread_headphones)
         self.host_threads.append(thread_heartbeat)
+        self.host_threads.append(thread_serial_rx)
         # self.host_threads.append(PeriodicThread.PeriodicThread(1, lambda: print("SERIAL GOT",self.serial.readline())))
 
     def start_threads(self):
@@ -80,7 +89,7 @@ class CubeBridge(HostManager):
 
         return None
     
-    def send_uart_message(self, type: int, payload: bytearray):
+    def send_uart_message(self, type: int, payload: bytearray, log: bool = True):
         if not self.serial.is_open():
             try:
                 self.serial.open()
@@ -89,11 +98,26 @@ class CubeBridge(HostManager):
                 return
         
         try:
-            return self.serial.write_message(type, payload)
+            return self.serial.write_message(type, payload, log)
         except:
             print("Serial comm failed. Closing port")
             self.serial.close()
     
+    # ----------------------------
+    # Cube -> laptop packets
+    # ----------------------------
+    def read_serial(self):
+        if not self.serial.is_open():
+            return
+        try:
+            self.uart_rx.loop()
+        except Exception:
+            pass  # port dropped; send_uart_message reopens it
+
+    def uart_handler(self, type: int, data: bytes, size: int):
+        if type == comms.SPOTIFY_VIZ_STATE and size >= 1:
+            self.spectrum.set_active(data[0] != 0)
+
     def send_spi_message(self, data_type: int, body: bytes):
         print("Tried sending SPI message, but not capable. ") # make this error?
         return
@@ -315,8 +339,10 @@ class CubeBridge(HostManager):
         
         self.init_threads()
         self.start_threads()
+        self.spectrum.start()
 
     def stop(self):
+        self.spectrum.stop()
         if self.mouse_listener is not None:
             self.mouse_listener.stop()
         if self.keyboard_listener is not None:

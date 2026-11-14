@@ -52,6 +52,8 @@ SPOTIFY_SET_SONG = 0x40
 SPOTIFY_SET_IMAGE = 0x41
 SPOTIFY_UPDATE_SONG = 0x42
 SPOTIFY_SET_LYRICS = 0x43
+SPOTIFY_SPECTRUM = 0x44 # laptop -> esp (uart): [NUM_BANDS x uint8 level]
+SPOTIFY_VIZ_STATE = 0x45 # esp -> laptop (uart): [uint8 active], resent every second while active
 
 # PI BYPASS COMMANDS (these messages will be sent as [PI_MSG, PI_CMD, ...PAYLOAD]) pass through esp32, and emerge in the same way
 PI_MSG = 0x50

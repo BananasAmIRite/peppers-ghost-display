@@ -61,6 +61,18 @@ class UARTComms {
 
 
         
+        // send a framed packet back out over this stream. Drops the packet (returns false) rather than
+        // blocking when the TX buffer is full, e.g. when nothing on the other end is reading.
+        bool send(uint8_t type, const uint8_t* data, uint8_t size) {
+            if (size > MAX_PAYLOAD) return false;
+            if (serial.availableForWrite() < size + 4) return false;
+
+            uint8_t header[4] = {SYNC_BYTE, SYNC_BYTE, (uint8_t)(size + 1), type};
+            serial.write(header, 4);
+            if (size > 0) serial.write(data, size);
+            return true;
+        }
+
         void addUARTHandler(UARTHandler* handler) {
             uartHandlers.push_back(handler); 
         }

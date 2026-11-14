@@ -23,6 +23,17 @@
 #define LYRICS_LINE_HEIGHT 40
 #define LYRICS_MAX_CHARS 25
 
+// spectrum visualizer
+#define SPECTRUM_BANDS 32               // must match NUM_BANDS in windows/SpectrumVisualizer.py
+#define SPECTRUM_BAR_WIDTH 6
+#define SPECTRUM_BAR_GAP 2
+#define SPECTRUM_MAX_HEIGHT 170
+#define SPECTRUM_FALL_PER_SEC 2.5f      // bar release speed (fraction of full height per second)
+#define SPECTRUM_PEAK_HOLD_MS 300
+#define SPECTRUM_PEAK_FALL_PER_SEC 0.8f
+#define SPECTRUM_NO_DATA_MS 2000        // show a hint if the laptop hasn't sent anything for this long
+#define VIZ_KEEPALIVE_MS 1000
+
 struct SongState {
     std::string name; 
     uint16_t length_seconds; 
@@ -37,8 +48,9 @@ struct SongLyricLine {
 };
 
 enum SpotifyRenderState {
-    IMAGE, 
-    LYRICS
+    IMAGE,
+    LYRICS,
+    SPECTRUM
 };
 
 class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTHandler {
@@ -57,7 +69,24 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
 
         std::vector<SongLyricLine> lyrics;
 
-        SpotifyRenderState renderState; 
+        SpotifyRenderState renderState;
+
+        // spectrum visualizer
+        UARTComms* hostLink = nullptr;  // laptop link, told when to start/stop streaming
+        bool screenActive = false;      // this screen is the active renderer
+        bool vizStreaming = false;      // last state reported to the laptop
+        uint32_t lastVizKeepalive = 0;
+        uint32_t lastSpectrumPacket = 0;
+        uint32_t lastSpectrumFrame = 0;
+        float spectrumTarget[SPECTRUM_BANDS] = {0};
+        float spectrumLevel[SPECTRUM_BANDS] = {0};
+        float spectrumPeak[SPECTRUM_BANDS] = {0};
+        uint32_t spectrumPeakTime[SPECTRUM_BANDS] = {0};
+
+        // streaming should run only while this screen is showing the SPECTRUM page
+        void updateVizStreaming();
+
+        void sendVizState(bool active);
 
 
 
@@ -84,6 +113,14 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
         void render(Adafruit_GFX* tft) override;
 
         void render_lyrics(Adafruit_GFX* tft);
+
+        void render_spectrum(Adafruit_GFX* tft);
+
+        void setHostLink(UARTComms* link);
+
+        void onActivate() override;
+
+        void onDeactivate() override;
 
         std::string seconds_to_str(uint16_t total_seconds);
 

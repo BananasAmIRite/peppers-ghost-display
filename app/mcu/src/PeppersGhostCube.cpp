@@ -16,7 +16,8 @@ PeppersGhostCube::PeppersGhostCube(Screen* scrnPtr, Adafruit_ImageReader* reader
         {
 
         // uart and spi handlers
-        spiStreamPtr->addHandler(&spotifyScreen); 
+        spiStreamPtr->addHandler(&spotifyScreen);
+        spotifyScreen.setHostLink(packetReceiver); // laptop link: spectrum visualizer start/stop
         packetReceiver->addUARTHandler(&spotifyScreen); 
         packetReceiver2->addUARTHandler(&spotifyScreen); 
 

@@ -112,8 +112,15 @@ void SpotifyScreen::render(Adafruit_GFX* tft) {
         if (curBuffer != nullptr) {
             drawScaledRGBBitmap(*tft, *curBuffer, tft->width() / 2 + SCRN_OFFSET - curBuffer->width() * IMG_SCALE / 2, tft->height() * 3 / 8 - curBuffer->height() * IMG_SCALE / 2, IMG_SCALE); 
         }
-    } else  {
+    } else if (renderState == LYRICS) {
         render_lyrics(tft);
+    } else {
+        render_spectrum(tft);
+    }
+
+    // keepalive so the laptop stops streaming on its own if we reset / unplug / stop rendering
+    if (vizStreaming && millis() - lastVizKeepalive >= VIZ_KEEPALIVE_MS) {
+        sendVizState(true);
     }
 
     // (scrolling) text 
@@ -215,6 +222,81 @@ void SpotifyScreen::render_lyrics(Adafruit_GFX* tft) {
 
         // drawCenteredText(tft, curLyrics.line.c_str(), tft->width() / 2 + SCRN_OFFSET, tft->height() * 3 / 8 + LYRICS_LINE_HEIGHT * (i - lyrics_idx)); 
     }
+}
+
+void SpotifyScreen::render_spectrum(Adafruit_GFX* tft) {
+    uint32_t now = millis();
+    float dt = lastSpectrumFrame == 0 ? 0 : (now - lastSpectrumFrame) / 1000.0f;
+    lastSpectrumFrame = now;
+
+    // no recent data from the laptop -> let the bars fall to zero
+    bool stale = lastSpectrumPacket == 0 || (now - lastSpectrumPacket) > SPECTRUM_NO_DATA_MS;
+
+    const int totalWidth = SPECTRUM_BANDS * (SPECTRUM_BAR_WIDTH + SPECTRUM_BAR_GAP) - SPECTRUM_BAR_GAP;
+    const int left = tft->width() / 2 + SCRN_OFFSET - totalWidth / 2;
+    const int bottom = tft->height() * 3 / 8 + SPECTRUM_MAX_HEIGHT / 2;
+
+    for (int i = 0; i < SPECTRUM_BANDS; i++) {
+        float target = stale ? 0 : spectrumTarget[i];
+
+        // instant attack, linear release
+        if (target >= spectrumLevel[i]) spectrumLevel[i] = target;
+        else spectrumLevel[i] = max(target, spectrumLevel[i] - SPECTRUM_FALL_PER_SEC * dt);
+
+        // peak caps: hold briefly, then fall slowly
+        if (spectrumLevel[i] >= spectrumPeak[i]) {
+            spectrumPeak[i] = spectrumLevel[i];
+            spectrumPeakTime[i] = now;
+        } else if (now - spectrumPeakTime[i] > SPECTRUM_PEAK_HOLD_MS) {
+            spectrumPeak[i] = max(spectrumLevel[i], spectrumPeak[i] - SPECTRUM_PEAK_FALL_PER_SEC * dt);
+        }
+
+        int x = left + i * (SPECTRUM_BAR_WIDTH + SPECTRUM_BAR_GAP);
+        int h = (int)(spectrumLevel[i] * SPECTRUM_MAX_HEIGHT);
+        if (h > 0) tft->fillRect(x, bottom - h, SPECTRUM_BAR_WIDTH, h, COLOR_GREEN);
+
+        int peakY = bottom - (int)(spectrumPeak[i] * SPECTRUM_MAX_HEIGHT) - 3;
+        tft->fillRect(x, peakY, SPECTRUM_BAR_WIDTH, 2, COLOR_WHITE);
+    }
+
+    if (stale) {
+        tft->setFont(&Tiny5_Regular12pt7b);
+        tft->setTextSize(1);
+        tft->setTextColor(COLOR_GRAY);
+        drawCenteredText(tft, "Waiting for audio...", tft->width() / 2 + SCRN_OFFSET, tft->height() * 3 / 8);
+    }
+}
+
+void SpotifyScreen::setHostLink(UARTComms* link) {
+    hostLink = link;
+}
+
+void SpotifyScreen::onActivate() {
+    SpriteScreen::onActivate();
+    screenActive = true;
+    updateVizStreaming();
+}
+
+void SpotifyScreen::onDeactivate() {
+    SpriteScreen::onDeactivate();
+    screenActive = false;
+    updateVizStreaming();
+}
+
+void SpotifyScreen::updateVizStreaming() {
+    bool shouldStream = screenActive && renderState == SPECTRUM;
+    if (shouldStream == vizStreaming) return;
+
+    vizStreaming = shouldStream;
+    if (shouldStream) lastSpectrumFrame = 0; // avoid one huge dt on the first frame
+    sendVizState(shouldStream);
+}
+
+void SpotifyScreen::sendVizState(bool active) {
+    lastVizKeepalive = millis();
+    if (hostLink == nullptr) return;
+    uint8_t value = active ? 1 : 0;
+    hostLink->send(SPOTIFY_VIZ_STATE, &value, 1);
 }
 
 std::string SpotifyScreen::seconds_to_str(uint16_t total_seconds) {
@@ -321,10 +403,22 @@ void SpotifyScreen::onUARTData(uint8_t type, uint8_t* data, uint8_t size, std::s
         uint16_t progress;
         bool paused = data[2] * 0x01;
         memcpy(&progress, data, 2);
-        updateSongState(progress, paused); 
+        updateSongState(progress, paused);
+    } else if (type == SPOTIFY_SPECTRUM) {
+        if (size < SPECTRUM_BANDS) return;
+        for (int i = 0; i < SPECTRUM_BANDS; i++) {
+            spectrumTarget[i] = data[i] / 255.0f;
+        }
+        lastSpectrumPacket = millis();
     }
 }
 
 void SpotifyScreen::click(Adafruit_GFX* display, uint16_t x, uint16_t y) {
-    renderState = renderState == LYRICS ? IMAGE : LYRICS; 
+    // IMAGE -> LYRICS -> SPECTRUM -> IMAGE
+    switch (renderState) {
+        case IMAGE: renderState = LYRICS; break;
+        case LYRICS: renderState = SPECTRUM; break;
+        default: renderState = IMAGE; break;
+    }
+    updateVizStreaming();
 }
