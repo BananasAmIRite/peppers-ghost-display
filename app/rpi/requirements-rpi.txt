@@ -23,3 +23,6 @@ pyasn1==0.6.3
 pyasn1_modules==0.4.2
 httplib2==0.32.0
 cryptography==49.0.0
+anyascii==0.3.3
+pykakasi==2.3.0
+pypinyin==0.55.0

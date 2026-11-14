@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from rpi.screens import ScreenType
 from threading import Thread
 from utils.lrcutils import parse_lrc
+from utils.romanize import romanize
 
 class SpotifyQuery:
     def __init__(self, mgr, spotify_client_id: str, spotify_secret: str):
@@ -71,7 +72,8 @@ class SpotifyQuery:
             json = response.json()
             artist_name = json["item"]["artists"][0]["name"] if len(json["item"]["artists"]) > 0 else ""
             track_name = json["item"]["name"]
-            name = ((artist_name + " - ") if len(json["item"]["artists"]) > 0 else "") + json["item"]["name"]
+            # original names are kept for the lyrics lookup; the displayed name is romanized
+            name = romanize(((artist_name + " - ") if len(json["item"]["artists"]) > 0 else "") + track_name)
             duration = int(json["item"]["duration_ms"] / 1000)
             progress = int(json["progress_ms"] / 1000)
 
@@ -137,7 +139,10 @@ class SpotifyQuery:
             json = response.json()
             synced_lyrics = json["syncedLyrics"]
 
-            parsed_lyrics_json = str(parse_lrc(synced_lyrics))
+            parsed_lyrics = parse_lrc(synced_lyrics)
+            for line in parsed_lyrics:
+                line["text"] = romanize(line["text"])
+            parsed_lyrics_json = str(parsed_lyrics)
 
             parsed_lyrics_bytes = parsed_lyrics_json.encode('utf-8')
 
