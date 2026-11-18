@@ -14,6 +14,16 @@ public:
     virtual void click(Adafruit_GFX* display, uint16_t x, uint16_t y) {}
     virtual void onActivate() {}    // called when this becomes the active renderer
     virtual void onDeactivate() {}  // called when it stops being the active renderer
+
+    // Called after render(). Return true to push only this region (logical, rotated coords) to the
+    // panel this frame instead of the whole screen -- much faster for small animated areas.
+    virtual bool getPartialRegion(int16_t& x, int16_t& y, int16_t& w, int16_t& h) { return false; }
+
+    // Aux overlays (e.g. the cursor) can veto partial frames while they need full redraws.
+    virtual bool allowPartialFrames() { return true; }
+
+    // Frame rate this renderer wants; 0 = use the screen's default.
+    virtual uint8_t preferredRefreshRate() { return 0; }
 };
 
 class EmptyScreen : public Renderable {
@@ -47,6 +57,7 @@ class Screen {
         }
         void tryRender();
         void update();
+        void updateRegion(int16_t x, int16_t y, int16_t w, int16_t h);
 
         Adafruit_GFX* getScreen() {
             return buffer;

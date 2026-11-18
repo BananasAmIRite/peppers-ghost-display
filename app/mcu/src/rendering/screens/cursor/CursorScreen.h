@@ -52,6 +52,9 @@ class CursorScreen : public SpriteScreen, public UARTHandler {
 
         void render(Adafruit_GFX* tft) override;
 
+        // the cursor can be anywhere, so it needs whole-screen pushes while it's shown
+        bool allowPartialFrames() override { return !state.cursorVisible; }
+
         
         // link handlePacket to packet comm
         void onUARTData(uint8_t type, uint8_t* data, uint8_t len, std::string name) override;

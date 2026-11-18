@@ -22,7 +22,7 @@ import lib.comms.comms as comms
 
 NUM_BANDS = 32             # must match SPECTRUM_BANDS in SpotifyScreen.h
 SAMPLE_RATE = 48000
-FPS = 30
+FPS = 60                   # cube renders the bars at ~40fps; 60 keeps rises from stepping
 HOP = SAMPLE_RATE // FPS   # new samples per frame
 FFT_SIZE = 4096            # analysis window (~85ms); needed so the lowest bands span >= 1 FFT bin
 F_MIN = 80

@@ -38,6 +38,8 @@
 #define SPECTRUM_PEAK_FALL_PER_SEC 0.8f
 #define SPECTRUM_NO_DATA_MS 2000        // show a hint if the laptop hasn't sent anything for this long
 #define VIZ_KEEPALIVE_MS 1000
+#define SPECTRUM_REFRESH_RATE 60        // target fps on the SPECTRUM page (SPI-bound to ~40 in practice)
+#define SPECTRUM_FULL_FRAME_MS 200      // full-screen push this often for the name scroll / slider / overlays
 
 struct SongState {
     std::string name; 
@@ -88,6 +90,10 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
         float spectrumPeak[SPECTRUM_BANDS] = {0};
         uint32_t spectrumPeakTime[SPECTRUM_BANDS] = {0};
 
+        // partial-frame state: only the bar area is pushed to the panel between full frames
+        int16_t spectrumRegionX = 0, spectrumRegionY = 0, spectrumRegionW = 0, spectrumRegionH = 0;
+        uint32_t lastFullFrame = 0; // 0 forces the next frame to be a full push
+
         // palette, tinted from the album art's dominant color
         uint16_t segColors[SPECTRUM_SEGMENTS];
         uint16_t reflectColors[SPECTRUM_REFLECT_SEGS];
@@ -136,6 +142,10 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
         void onActivate() override;
 
         void onDeactivate() override;
+
+        bool getPartialRegion(int16_t& x, int16_t& y, int16_t& w, int16_t& h) override;
+
+        uint8_t preferredRefreshRate() override;
 
         std::string seconds_to_str(uint16_t total_seconds);
 

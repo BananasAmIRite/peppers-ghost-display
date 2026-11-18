@@ -318,6 +318,12 @@ void SpotifyScreen::render_spectrum(Adafruit_GFX* tft) {
     const int left = tft->width() / 2 + SCRN_OFFSET - totalWidth / 2;
     const int bottom = tft->height() * 3 / 8 + SPECTRUM_MAX_HEIGHT / 2 - 5; // leaves room for the reflection above the song name
 
+    // everything this page animates: peak caps above the bars down to the end of the reflection
+    spectrumRegionX = left - 1;
+    spectrumRegionW = totalWidth + 2;
+    spectrumRegionY = bottom - SPECTRUM_MAX_HEIGHT - 5;
+    spectrumRegionH = SPECTRUM_MAX_HEIGHT + 5 + 2 + SPECTRUM_REFLECT_SEGS * SPECTRUM_SEG_PITCH + 2;
+
     for (int i = 0; i < SPECTRUM_BANDS; i++) {
         float target = stale ? 0 : spectrumTarget[i];
 
@@ -370,8 +376,30 @@ void SpotifyScreen::setHostLink(UARTComms* link) {
     hostLink = link;
 }
 
+bool SpotifyScreen::getPartialRegion(int16_t& x, int16_t& y, int16_t& w, int16_t& h) {
+    if (renderState != SPECTRUM || spectrumRegionW == 0) return false;
+
+    // periodic full pushes keep the name scroll, slider, times and overlays updating
+    uint32_t now = millis();
+    if (lastFullFrame == 0 || now - lastFullFrame >= SPECTRUM_FULL_FRAME_MS) {
+        lastFullFrame = now;
+        return false;
+    }
+
+    x = spectrumRegionX;
+    y = spectrumRegionY;
+    w = spectrumRegionW;
+    h = spectrumRegionH;
+    return true;
+}
+
+uint8_t SpotifyScreen::preferredRefreshRate() {
+    return renderState == SPECTRUM ? SPECTRUM_REFRESH_RATE : 0;
+}
+
 void SpotifyScreen::onActivate() {
     SpriteScreen::onActivate();
+    lastFullFrame = 0;
     screenActive = true;
     updateVizStreaming();
 }
@@ -519,5 +547,6 @@ void SpotifyScreen::click(Adafruit_GFX* display, uint16_t x, uint16_t y) {
         case LYRICS: renderState = SPECTRUM; break;
         default: renderState = IMAGE; break;
     }
+    lastFullFrame = 0; // page content changed: next frame must be a full push
     updateVizStreaming();
 }

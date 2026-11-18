@@ -87,7 +87,7 @@ void setup() {
   uint8_t m = MADCTL_RGB | MADCTL_MY; // flip x + rgb
   tft.sendCommand(HX8357_MADCTL, &m, 1); 
   // tft.init(240, 320, SPI_MODE0);           // Init ST7789 320x240
-  tft.setSPISpeed(40000000); 
+  tft.setSPISpeed(50000000); 
 
   // rpispi.begin(); 
 
