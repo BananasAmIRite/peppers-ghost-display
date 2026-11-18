@@ -73,11 +73,93 @@ void SpotifyScreen::resetScroll() {
 SpotifyScreen::SpotifyScreen() : SpriteScreen({"slider0.bmp", "slider1.bmp", "sliderbtn.bmp"}), lyrics(), renderState(IMAGE) {
     setSong("Not Playing...", 100);
     curSong.last_synchronized_millis = millis();
+    setSpectrumAccent(30, 215, 96); // default: spotify green
 }
 
 void SpotifyScreen::loadBuffer(uint16_t width, uint16_t height, uint8_t* data, uint32_t data_size) {
     curBuffer = std::make_shared<GFXcanvas16>(width, height);
-    memcpy(curBuffer->getBuffer(), data, data_size);  
+    memcpy(curBuffer->getBuffer(), data, data_size);
+    computeAccentFromArt();
+}
+
+static inline uint16_t pack565(float r, float g, float b) {
+    uint8_t r8 = (uint8_t)constrain(r, 0.0f, 255.0f);
+    uint8_t g8 = (uint8_t)constrain(g, 0.0f, 255.0f);
+    uint8_t b8 = (uint8_t)constrain(b, 0.0f, 255.0f);
+    return ((r8 & 0xF8) << 8) | ((g8 & 0xFC) << 3) | (b8 >> 3);
+}
+
+// builds the bar palette from one accent color: dim at the base, full color through the middle,
+// washing toward white at the very top
+void SpotifyScreen::setSpectrumAccent(uint8_t r, uint8_t g, uint8_t b) {
+    for (int j = 0; j < SPECTRUM_SEGMENTS; j++) {
+        float t = (float)j / (SPECTRUM_SEGMENTS - 1);
+        float bright = 0.35f + 0.65f * min(t / 0.7f, 1.0f);
+        float white = t > 0.75f ? (t - 0.75f) / 0.25f * 0.45f : 0;
+        segColors[j] = pack565(
+            r * bright * (1 - white) + 255 * white,
+            g * bright * (1 - white) + 255 * white,
+            b * bright * (1 - white) + 255 * white);
+    }
+
+    const float reflectFade[SPECTRUM_REFLECT_SEGS] = {0.22f, 0.14f, 0.08f, 0.04f};
+    for (int k = 0; k < SPECTRUM_REFLECT_SEGS; k++) {
+        reflectColors[k] = pack565(r * reflectFade[k], g * reflectFade[k], b * reflectFade[k]);
+    }
+
+    peakColor = pack565(r * 0.4f + 255 * 0.6f, g * 0.4f + 255 * 0.6f, b * 0.4f + 255 * 0.6f);
+    idlePeakColor = pack565(r * 0.25f, g * 0.25f, b * 0.25f);
+}
+
+// picks the album art's dominant vivid hue (saturation/brightness-weighted hue histogram)
+void SpotifyScreen::computeAccentFromArt() {
+    if (curBuffer == nullptr) return;
+
+    const int HUE_BINS = 12;
+    float weight[HUE_BINS] = {0}, sumR[HUE_BINS] = {0}, sumG[HUE_BINS] = {0}, sumB[HUE_BINS] = {0};
+
+    uint16_t* px = curBuffer->getBuffer();
+    int n = curBuffer->width() * curBuffer->height();
+
+    for (int i = 0; i < n; i++) {
+        uint16_t c = px[i];
+        float r = ((c >> 11) & 0x1F) * 255.0f / 31;
+        float g = ((c >> 5) & 0x3F) * 255.0f / 63;
+        float b = (c & 0x1F) * 255.0f / 31;
+
+        float mx = max(r, max(g, b));
+        float mn = min(r, min(g, b));
+        if (mx < 50) continue;                   // too dark
+        float d = mx - mn;
+        float sat = d / mx;
+        if (sat < 0.25f) continue;               // too gray
+
+        float hue;
+        if (mx == r) hue = 60 * fmodf((g - b) / d, 6);
+        else if (mx == g) hue = 60 * ((b - r) / d + 2);
+        else hue = 60 * ((r - g) / d + 4);
+        if (hue < 0) hue += 360;
+
+        int bin = min((int)(hue / (360.0f / HUE_BINS)), HUE_BINS - 1);
+        float w = sat * sat * (mx / 255.0f);
+        weight[bin] += w;
+        sumR[bin] += r * w;
+        sumG[bin] += g * w;
+        sumB[bin] += b * w;
+    }
+
+    int best = 0;
+    for (int i = 1; i < HUE_BINS; i++) if (weight[i] > weight[best]) best = i;
+
+    if (weight[best] < n * 0.01f) {
+        setSpectrumAccent(30, 215, 96); // grayscale art: fall back to spotify green
+        return;
+    }
+
+    // average color of the winning hue, pushed to full brightness so it reads on the ghost display
+    float r = sumR[best] / weight[best], g = sumG[best] / weight[best], b = sumB[best] / weight[best];
+    float scale = 255.0f / max(r, max(g, b));
+    setSpectrumAccent(r * scale, g * scale, b * scale);
 }
 
 void SpotifyScreen::setSong(std::string name, uint16_t length_seconds) {
@@ -234,7 +316,7 @@ void SpotifyScreen::render_spectrum(Adafruit_GFX* tft) {
 
     const int totalWidth = SPECTRUM_BANDS * (SPECTRUM_BAR_WIDTH + SPECTRUM_BAR_GAP) - SPECTRUM_BAR_GAP;
     const int left = tft->width() / 2 + SCRN_OFFSET - totalWidth / 2;
-    const int bottom = tft->height() * 3 / 8 + SPECTRUM_MAX_HEIGHT / 2;
+    const int bottom = tft->height() * 3 / 8 + SPECTRUM_MAX_HEIGHT / 2 - 5; // leaves room for the reflection above the song name
 
     for (int i = 0; i < SPECTRUM_BANDS; i++) {
         float target = stale ? 0 : spectrumTarget[i];
@@ -252,11 +334,28 @@ void SpotifyScreen::render_spectrum(Adafruit_GFX* tft) {
         }
 
         int x = left + i * (SPECTRUM_BAR_WIDTH + SPECTRUM_BAR_GAP);
-        int h = (int)(spectrumLevel[i] * SPECTRUM_MAX_HEIGHT);
-        if (h > 0) tft->fillRect(x, bottom - h, SPECTRUM_BAR_WIDTH, h, COLOR_GREEN);
+        int segs = (int)(spectrumLevel[i] * SPECTRUM_SEGMENTS + 0.5f);
 
-        int peakY = bottom - (int)(spectrumPeak[i] * SPECTRUM_MAX_HEIGHT) - 3;
-        tft->fillRect(x, peakY, SPECTRUM_BAR_WIDTH, 2, COLOR_WHITE);
+        // lit segments, colored by height
+        for (int j = 0; j < segs; j++) {
+            int top = bottom - j * SPECTRUM_SEG_PITCH - SPECTRUM_SEG_HEIGHT;
+            tft->fillRect(x, top, SPECTRUM_BAR_WIDTH, SPECTRUM_SEG_HEIGHT, segColors[j]);
+        }
+
+        // faded reflection under the bar
+        for (int k = 0; k < min(segs, SPECTRUM_REFLECT_SEGS); k++) {
+            int top = bottom + 2 + k * SPECTRUM_SEG_PITCH;
+            tft->fillRect(x, top, SPECTRUM_BAR_WIDTH, SPECTRUM_SEG_HEIGHT, reflectColors[k]);
+        }
+
+        // peak cap: a thin line at the top of the peak segment; a dim baseline when silent
+        int peakSeg = (int)(spectrumPeak[i] * SPECTRUM_SEGMENTS + 0.5f);
+        if (peakSeg > 0) {
+            int top = bottom - (peakSeg - 1) * SPECTRUM_SEG_PITCH - SPECTRUM_SEG_HEIGHT;
+            tft->fillRect(x, top - 3, SPECTRUM_BAR_WIDTH, 2, peakColor);
+        } else {
+            tft->fillRect(x, bottom - 2, SPECTRUM_BAR_WIDTH, 2, idlePeakColor);
+        }
     }
 
     if (stale) {

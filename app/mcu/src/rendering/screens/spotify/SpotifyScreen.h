@@ -25,10 +25,15 @@
 
 // spectrum visualizer
 #define SPECTRUM_BANDS 32               // must match NUM_BANDS in windows/SpectrumVisualizer.py
-#define SPECTRUM_BAR_WIDTH 6
+#define SPECTRUM_BAR_WIDTH 7
 #define SPECTRUM_BAR_GAP 2
-#define SPECTRUM_MAX_HEIGHT 170
-#define SPECTRUM_FALL_PER_SEC 2.5f      // bar release speed (fraction of full height per second)
+#define SPECTRUM_SEG_HEIGHT 4           // bars are stacks of LED-style segments
+#define SPECTRUM_SEG_GAP 1
+#define SPECTRUM_SEG_PITCH (SPECTRUM_SEG_HEIGHT + SPECTRUM_SEG_GAP)
+#define SPECTRUM_SEGMENTS 34
+#define SPECTRUM_MAX_HEIGHT (SPECTRUM_SEGMENTS * SPECTRUM_SEG_PITCH)
+#define SPECTRUM_REFLECT_SEGS 4         // faded mirror segments under each bar
+#define SPECTRUM_FALL_PER_SEC 4.0f      // bar release speed (fraction of full height per second)
 #define SPECTRUM_PEAK_HOLD_MS 300
 #define SPECTRUM_PEAK_FALL_PER_SEC 0.8f
 #define SPECTRUM_NO_DATA_MS 2000        // show a hint if the laptop hasn't sent anything for this long
@@ -82,6 +87,16 @@ class SpotifyScreen : public SpriteScreen, public SPIStreamHandler, public UARTH
         float spectrumLevel[SPECTRUM_BANDS] = {0};
         float spectrumPeak[SPECTRUM_BANDS] = {0};
         uint32_t spectrumPeakTime[SPECTRUM_BANDS] = {0};
+
+        // palette, tinted from the album art's dominant color
+        uint16_t segColors[SPECTRUM_SEGMENTS];
+        uint16_t reflectColors[SPECTRUM_REFLECT_SEGS];
+        uint16_t peakColor;
+        uint16_t idlePeakColor;
+
+        void setSpectrumAccent(uint8_t r, uint8_t g, uint8_t b);
+
+        void computeAccentFromArt();
 
         // streaming should run only while this screen is showing the SPECTRUM page
         void updateVizStreaming();
