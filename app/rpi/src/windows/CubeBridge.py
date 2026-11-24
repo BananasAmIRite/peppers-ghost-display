@@ -18,6 +18,7 @@ from threads.headphone_query import HeadphoneQuery
 from threads.heartbeat import heartbeat
 from threads.serial_loop import UARTComms
 from windows.SpectrumVisualizer import SpectrumVisualizer
+from windows.MXMaster import MXMasterThumbButton
 
 CUBE_W = 480
 CUBE_H = 320
@@ -40,6 +41,12 @@ class CubeBridge(HostManager):
 
         self.mouse_listener = None
         self.keyboard_listener = None
+
+        # MX Master thumb-button gestures -> swipes while over the cube
+        self.mx_master = MXMasterThumbButton(
+            on_swipe=self.swipe,
+            is_active=lambda: self.enabled and self.inside,
+        )
 
         # Start enabled by default
         self.enabled = True
@@ -217,6 +224,9 @@ class CubeBridge(HostManager):
         if not self.inside:
             return
 
+        if button != mouse.Button.left:
+            return
+
         if pressed:
             self.send_uart_message(comms.CURSOR_DOWN, bytearray())
             self.send_uart_message(comms.CURSOR_CLICK, bytearray())
@@ -332,8 +342,10 @@ class CubeBridge(HostManager):
         self.mouse_listener.start()
 
         self.keyboard_listener = keyboard.Listener(
-            on_press=self.on_key_press
+            on_press=self.on_key_press,
+            win32_event_filter=self.mx_master.win32_event_filter
         )
+        self.mx_master.attach(self.keyboard_listener)
         self.keyboard_listener.start()
 
         
