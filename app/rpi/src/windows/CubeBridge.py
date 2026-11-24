@@ -84,7 +84,7 @@ class CubeBridge(HostManager):
         print(monitors)
 
         for m in monitors:
-            if m.name == '\\\\.\\DISPLAY4':
+            if m.width == 800 and m.height == 600:
                 return m
 
         return None
